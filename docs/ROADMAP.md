@@ -42,11 +42,11 @@ From comparing James, Priscilla, and Levin Sunday Starters:
 1. ~~**Pick one shared channel** (Kick, ch1) from James snapshot~~ ✓
 2. ~~**Map the Wing JSON structure** for that channel — all 267 params~~ ✓
 3. ~~**Pick conventions for throwaway DSL** — naming, defaults, send omission~~ ✓ (autonomous)
-4. **Build Wing JSON tooling**: parser, writer, defaults extraction from Base.snap
-5. **Build minimal channel-frame renderer**: throwaway YAML → Wing JSON for ch1
-6. **Round-trip test**: render → diff against James.snap ch1 → measure gap
-7. **⚠️ ESCALATE: Review tolerances** — what's noise vs meaningful diff. Only Phase 0 escalation.
-8. **Expand to full channel**: add EQ, dynamics, gate, all sends — still ch1 only
+4. ~~**Build Wing JSON tooling**: parser, writer, defaults extraction from Base.snap~~ ✓
+5. ~~**Build minimal channel-frame renderer**: throwaway YAML → Wing JSON for ch1~~ ✓
+6. ~~**Round-trip test**: render → diff against James.snap ch1 → measure gap~~ ✓
+7. ~~**⚠️ ESCALATE: Review tolerances** — 3 sig figs, Q quantization as noise~~ ✓
+8. ~~**Expand to full channel**: add EQ, dynamics, gate, filters~~ ✓
 9. **Document Wing param map** — grouped reference for future DSL design
 
 ### Success criteria

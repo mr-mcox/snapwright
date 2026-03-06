@@ -29,6 +29,65 @@ class InputConfig(BaseModel):
         return {"grp": grp, "in": self.input, "altgrp": "OFF", "altin": 1}
 
 
+class FiltersConfig(BaseModel):
+    hpf_on: bool = False
+    hpf_freq: float = 80.0      # Hz
+    lpf_on: bool = False
+    lpf_freq: float = 20000.0   # Hz
+    tilt_on: bool = False
+
+
+class EqBand(BaseModel):
+    gain: float = 0.0   # dB
+    freq: float = 1000.0  # Hz
+    q: float = 1.0
+
+
+class EqShelf(BaseModel):
+    gain: float = 0.0   # dB
+    freq: float = 1000.0  # Hz
+
+
+class EqConfig(BaseModel):
+    on: bool = False
+    model: str = "STD"
+    low_shelf: EqShelf = EqShelf()
+    bands: list[EqBand] = []    # up to 4 bands; omitted bands stay at defaults
+    high_shelf: EqShelf = EqShelf()
+
+
+class LevelerConfig(BaseModel):
+    on: bool = False
+    threshold: float = -10.0  # dB
+    recovery: int = 50        # ms
+    fast: bool = False
+
+
+class CompressorConfig(BaseModel):
+    on: bool = False
+    threshold: float = -10.0  # dB
+    ratio: float = 3.0
+    recovery: int = 100       # ms
+    fast: bool = False
+
+
+class DynamicsConfig(BaseModel):
+    on: bool = False
+    model: str = "COMP"
+    # ECL33-specific sub-sections (ignored for other models)
+    leveler: LevelerConfig = LevelerConfig()
+    compressor: CompressorConfig = CompressorConfig()
+
+
+class GateConfig(BaseModel):
+    on: bool = False
+    threshold: float = -40.0  # dB
+    range: float = 40.0       # dB
+    attack: float = 10.0      # ms
+    hold: float = 10.0        # ms
+    release: float = 200.0    # ms
+
+
 class SendConfig(BaseModel):
     on: bool = False
     level: float = -144.0
@@ -43,14 +102,18 @@ class ChannelConfig(BaseModel):
     input: InputConfig = InputConfig()
     fader: float = 0.0
     mute: bool = False
+    filters: FiltersConfig = FiltersConfig()
+    eq: EqConfig = EqConfig()
+    dynamics: DynamicsConfig = DynamicsConfig()
+    gate: GateConfig = GateConfig()
     sends: dict[str, SendConfig] = {}
 
     @model_validator(mode="after")
-    def _validate_sends(self) -> ChannelConfig:
-        # Normalise send keys: accept "bus1" or "1", "MX1" etc.
+    def _normalise_sends(self) -> ChannelConfig:
+        # Accept "bus1" or "1", "MX1" etc.
         normalised: dict[str, SendConfig] = {}
         for key, val in self.sends.items():
-            k = key.upper().removeprefix("BUS")  # "bus1" → "1", "MX1" → "MX1"
+            k = key.upper().removeprefix("BUS")
             normalised[k] = val
         self.sends = normalised
         return self

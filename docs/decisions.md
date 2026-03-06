@@ -35,6 +35,16 @@
 **Rationale**: These are never tweaked across any reference snapshots; DSL should express intent, not echo defaults.
 **Category**: autonomous
 
+### 2026-03-06 — Round-trip tolerance: 3 significant figures
+**Decision**: Rendered values match target if they agree to 3 significant figures. Wing stores DSL values with its own float quantization (e.g. `177.0` → `176.972168`, `1.0` Q → `0.997970223`); these are within tolerance.
+**Rationale**: 3 sig figs is finer than any audible distinction on this desk; covers all Wing float quantization observed in practice.
+**Category**: escalated
+
+### 2026-03-06 — Wing Q quantization treated as noise
+**Decision**: DSL authors write round Q values (e.g. `q: 1.0`); renderer stores them as-is; Wing's internal Q encoding (0.997970223 for "1.0") is accepted as noise under the 3 sig fig rule. No Q scale encoding in renderer.
+**Rationale**: 0.2% error on Q is inaudible; encoding Wing's internal scale is premature complexity for Phase 0.
+**Category**: escalated
+
 ### 2026-03-06 — Physical layout explicit through Phase 2, resolver needed in Phase 3
 **Decision**: Phase 1-2 use explicit physical assignments in assembly files. Phase 3 (complexity levels) is where a layout resolver gets built if needed.
 **Rationale**: Different complexity levels may need different channel counts and routing topologies, which is the first case where the system needs to make assignment decisions.

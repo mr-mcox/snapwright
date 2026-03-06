@@ -1,16 +1,63 @@
 # ch1 — Kick drum (James team)
-# Phase 0 minimal: identity, fader, active sends only.
-# EQ/dynamics/gate come in step 8 of the steel thread.
+# Phase 0 full channel: identity, filters, EQ, dynamics, gate, fader, sends.
 
 channel: 1
 name: Kick
 color: 8
 icon: 200
+
 input:
   source: stage-box
   input: 2
+
 fader: -3.33
 mute: false
+
+filters:
+  hpf_on: false
+  hpf_freq: 198.6
+  lpf_on: true
+  lpf_freq: 223.6
+  tilt_on: true
+
+eq:
+  "on": true
+  model: STD
+  low_shelf:
+    gain: 2.8
+    freq: 61.9
+  bands:
+    - { gain: 5.7,  freq: 177.0,  q: 2.77 }
+    - { gain: 0,    freq: 601.4,  q: 1.0  }
+    - { gain: 0,    freq: 1499.8, q: 1.0  }
+    - { gain: -15,  freq: 3961.9, q: 1.0  }
+  high_shelf:
+    gain: -15
+    freq: 11999.3
+
+dynamics:
+  "on": true
+  model: ECL33
+  leveler:
+    "on": true
+    threshold: -5
+    recovery: 50
+    fast: true
+  compressor:
+    "on": true
+    threshold: -15
+    ratio: 3
+    recovery: 100
+    fast: true
+
+gate:
+  "on": false
+  threshold: -40
+  range: 40
+  attack: 10
+  hold: 10
+  release: 199.4
+
 sends:
   bus1:
     "on": true
