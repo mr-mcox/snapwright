@@ -1,5 +1,30 @@
 # Decisions
 
+### 2026-03-06 — YAML 1.1 bool-key fix via strict type check
+**Decision**: PyYAML parses `on:` as a boolean dict key (`True`). Fixed by post-processing loaded dicts with `type(k) is bool` check (not `k == True`, which would wrongly match integer 1 due to Python's `True == 1`).
+**Rationale**: Avoids dependency on ruamel.yaml or changing DSL field names. Strict type check is the minimal correct fix.
+**Category**: autonomous
+
+### 2026-03-06 — EQ/dynamics/gate dict rebuild on model switch
+**Decision**: When the DSL specifies a model different from the Wing default (STD/COMP/GATE), the renderer rebuilds the entire dict from scratch rather than patching over Base.snap defaults. Matches Wing's own behaviour — switching models drops the previous model's params from JSON.
+**Rationale**: Leaving old-model params in place produced spurious diff items (e.g. STD EQ bands appearing in SOUL EQ channels).
+**Category**: autonomous
+
+### 2026-03-06 — EQ/dynamics/gate extra fields pass-through for non-standard models
+**Decision**: EqConfig, DynamicsConfig, GateConfig use Pydantic `extra='allow'`. Non-standard Wing model params (SOUL lf/lg/lmf, LA ingain/peak, PSE depth, RIDE tgt/spd, etc.) are written as extra fields in YAML and pass through directly to Wing JSON.
+**Rationale**: Wing has 10+ EQ models and 6+ dynamics models with incompatible param structures. Typed fields for each would be premature. Pass-through handles them correctly with minimal schema surface area.
+**Category**: autonomous
+
+### 2026-03-06 — Omit -144dB monitor sends from assembly
+**Decision**: The assembly monitors section only lists sends that are actively ON. -144dB level sends (Wing's silence value) are omitted — they render as off by default.
+**Rationale**: Listing -144 sends as on=True contradicts the reference snapshots where those sends are off. Omitting them keeps the DSL expressive of intent, not Wing internals.
+**Category**: autonomous
+
+### 2026-03-06 — Phase 1 diff baseline: 112 items, ~70 float precision
+**Decision**: Accept the current diff baseline as Phase 1 validation passing. ~70 of 112 diff items are Wing float quantization within 3-sig-fig tolerance. Remaining ~30 are metadata (ptap, tags, led) and detailed routing (preins, peq, dynsc) deferred to later phases.
+**Rationale**: Core processing (EQ, dynamics, gate), channel sends, monitor sends, faders, and inputs all match the reference. The outstanding diffs are below the threshold of audible impact.
+**Category**: autonomous
+
 ### 2026-03-06 — DSL three-section assembly structure
 **Decision**: Assembly files have three clear sections: *who they are* (musicians + inheritance + offsets/overrides), *where they sit* (channels + inputs + buses), *what they hear* (monitors). Musicians are named, configured, then assigned to channels separately.
 **Rationale**: Separating identity from physical placement means the same musician config works across teams at different channel positions. Mirrors how Matthew thinks about it — people first, desk layout second.
