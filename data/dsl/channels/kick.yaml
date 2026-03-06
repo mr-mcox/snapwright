@@ -1,0 +1,18 @@
+# ch1 — Kick drum (James team)
+# Phase 0 minimal: identity, fader, active sends only.
+# EQ/dynamics/gate come in step 8 of the steel thread.
+
+channel: 1
+name: Kick
+color: 8
+icon: 200
+input:
+  source: stage-box
+  input: 2
+fader: -3.33
+mute: false
+sends:
+  bus1:
+    "on": true
+    level: -5.5
+    mode: POST
