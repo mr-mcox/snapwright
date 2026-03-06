@@ -1,0 +1,44 @@
+name: Bass
+color: 9
+icon: 302
+fader: -0.06
+
+processing:
+  filters:
+    hpf_on: false
+    hpf_freq: 100.2
+    lpf_on: false
+    lpf_freq: 1090.3
+    tilt_on: false
+
+  eq:
+    on: true
+    model: STD
+    low_shelf:
+      gain: -6
+      freq: 61.5
+    bands:
+      - { freq: 137.6, gain: -1.1 }
+      - { freq: 303.6, gain: 3.7 }
+      - { freq: 1543.6, gain: 0 }
+      - { freq: 3821.9, gain: 0, q: 3.36 }
+    high_shelf:
+      gain: 0
+      freq: 11999.3
+
+  dynamics:
+    on: true
+    model: LA
+    ingain: 56
+    peak: 54
+    mode: COMP
+
+  gate:
+    on: true
+    model: GATE
+    threshold: -41.5
+    range: 40
+    attack: 10
+    hold: 10
+    release: 199.4
+    ratio: "1:3"

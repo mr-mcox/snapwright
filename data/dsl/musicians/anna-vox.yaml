@@ -1,0 +1,41 @@
+name: Anna
+color: 1
+icon: 0
+fader: 0.34
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 100.2
+    tilt_on: false
+
+  eq:
+    on: true
+    model: SOUL
+    lf: 2
+    lg: 0
+    lmf: 2.5
+    lmf3: false
+    lmq: 5
+    lmg: -1.4
+    hmf: 2.9
+    hmf3: false
+    hmq: 5
+    hmg: 0.7
+    hf: 8
+    hg: 0
+
+  dynamics:
+    on: true
+    model: LA
+    ingain: 40
+    peak: 20
+    mode: COMP
+
+  gate:
+    on: true
+    model: PSE
+    threshold: -9
+    depth: 15.5
+    fast: false
+    peak: false

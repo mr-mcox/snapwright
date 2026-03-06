@@ -1,0 +1,43 @@
+name: Yolaine
+color: 1
+icon: 0
+fader: -3.69
+trim: 0.7
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 286.6
+    hpf_slope: "18"
+    tilt_on: false
+
+  eq:
+    on: true
+    model: SOUL
+    lf: 2
+    lg: 0.2
+    lmf: 6
+    lmf3: true
+    lmq: 5
+    lmg: 0
+    hmf: 3
+    hmf3: false
+    hmq: 5
+    hmg: 0
+    hf: 8
+    hg: 0
+
+  dynamics:
+    on: true
+    model: LA
+    ingain: 53
+    peak: 20
+    mode: COMP
+
+  gate:
+    on: true
+    model: PSE
+    threshold: -9.5
+    depth: 15
+    fast: false
+    peak: false

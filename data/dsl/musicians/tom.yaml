@@ -1,0 +1,40 @@
+name: Tom
+color: 8
+icon: 208
+fader: -0.72
+
+processing:
+  filters:
+    hpf_on: false
+    tilt_on: false
+
+  eq:
+    on: true
+    model: STD
+    low_shelf:
+      gain: 0
+      freq: 80.2
+    bands:
+      - { freq: 200, gain: 0 }
+      - { freq: 601.4, gain: 0 }
+      - { freq: 1499.8, gain: 0 }
+      - { freq: 3990.5, gain: 0 }
+    high_shelf:
+      gain: 0
+      freq: 11999.3
+
+  dynamics:
+    on: false
+    model: COMP
+    thr: -15.5
+    ratio: 3
+
+  gate:
+    on: true
+    model: GATE
+    threshold: -39.5
+    range: 40
+    attack: 10
+    hold: 10
+    release: 199.4
+    ratio: "1:3"

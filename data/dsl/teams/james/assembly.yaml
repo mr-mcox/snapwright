@@ -1,0 +1,247 @@
+team_name: James Team
+
+# ---------------------------------------------------------------------------
+# Musicians — who they are and how they're tweaked for this team
+# ---------------------------------------------------------------------------
+
+musicians:
+  kick:
+    inherits:
+      - musicians/kick.yaml
+    sends:
+      drums: -5.5
+
+  snare:
+    inherits:
+      - musicians/snare.yaml
+    sends:
+      drums: 0.10
+
+  tom:
+    inherits:
+      - musicians/tom.yaml
+    sends:
+      drums: -13.60
+
+  overhead:
+    inherits:
+      - musicians/overhead.yaml
+    sends:
+      drums: -1.70
+
+  bass:
+    inherits:
+      - musicians/bass.yaml
+    sends:
+      rhythm_house: -11.18
+      rhythm_stream: 0.08
+
+  conga-1:
+    inherits:
+      - musicians/conga-1.yaml
+    main_on: false
+    sends:
+      drums: -0.70
+
+  conga-2:
+    inherits:
+      - musicians/conga-2.yaml
+    main_on: false
+    sends:
+      drums: 0.20
+
+  bongos:
+    inherits:
+      - musicians/bongos.yaml
+    main_on: false
+    sends:
+      drums: -0.70
+
+  james-guitar:
+    inherits:
+      - musicians/james-guitar.yaml
+    main_on: false
+    sends:
+      rhythm_house: -4.09
+      rhythm_stream: 0.00
+
+  flute:
+    inherits:
+      - musicians/flute.yaml
+    main_on: false
+    sends:
+      melodic_house: -5.66
+      melodic_stream: -0.45
+      reverb_medium: -27.93
+
+  violin:
+    inherits:
+      - musicians/violin.yaml
+    sends:
+      rhythm_house: -0.23
+      rhythm_stream: -0.40
+
+  james-vox:
+    inherits:
+      - musicians/james-vox.yaml
+    sends:
+      vocals: -0.35
+      delay_slap: -17.97
+
+  priscilla-vox:
+    inherits:
+      - musicians/priscilla-vox.yaml
+    sends:
+      vocals: -0.45
+      stage_feed: -19.36
+      delay_slap: -52.54
+      reverb_medium: -10.76
+      back_vox: -0.54
+
+  anna-vox:
+    inherits:
+      - musicians/anna-vox.yaml
+    sends:
+      vocals: 0.00
+      stage_feed: -9.99
+      reverb_medium: -8.70
+      back_vox: -0.75
+
+  yolaine-vox:
+    inherits:
+      - musicians/yolaine-vox.yaml
+    sends:
+      vocals: 0.23
+      stage_feed: -14.65
+      reverb_medium: -8.40
+      back_vox: 0.21
+
+  handheld:
+    inherits:
+      - musicians/handheld.yaml
+
+  headset:
+    inherits:
+      - musicians/headset.yaml
+
+# ---------------------------------------------------------------------------
+# Physical layout — where they sit on the desk
+# ---------------------------------------------------------------------------
+
+channels:
+  # Bank 1: Drums & percussion
+  1:  kick
+  2:  snare
+  3:  tom
+  4:  overhead
+  5:  bass
+  6:  conga-1
+  7:  conga-2
+  8:  bongos
+  # Bank 2: Instruments
+  13: james-guitar
+  14: flute
+  16: violin
+  # Bank 3: Vocals
+  25: james-vox
+  26: priscilla-vox
+  27: anna-vox
+  28: yolaine-vox
+  # Spares
+  37: handheld
+  38: headset
+
+inputs:
+  kick:          { source: stage-box, input: 2  }
+  snare:         { source: stage-box, input: 3  }
+  tom:           { source: stage-box, input: 5  }
+  overhead:      { source: stage-box, input: 4  }
+  bass:          { source: stage-box, input: 6  }
+  conga-1:       { source: stage-box, input: 7  }
+  conga-2:       { source: stage-box, input: 8  }
+  bongos:        { source: stage-box, input: 9  }
+  james-guitar:  { source: stage-box, input: 14 }
+  flute:         { source: stage-box, input: 15 }
+  violin:        { source: stage-box, input: 18 }
+  james-vox:     { source: stage-box, input: 10 }
+  priscilla-vox: { source: stage-box, input: 11 }
+  anna-vox:      { source: stage-box, input: 12 }
+  yolaine-vox:   { source: stage-box, input: 13 }
+  handheld:      { source: stage-box, input: 32 }
+  headset:       { source: stage-box, input: 31 }
+
+buses:
+  1:  drums
+  2:  rhythm_house
+  3:  rhythm_stream
+  4:  melodic_house
+  5:  melodic_stream
+  6:  vocals
+  8:  stage_feed
+  9:  delay_slap
+  10: reverb_medium
+  11: reverb_long
+  12: back_vox
+  13: monitor_1
+  14: monitor_2
+  15: monitor_3
+  16: monitor_4
+
+# ---------------------------------------------------------------------------
+# Monitor sends (PRE-fader) — only list sends that are actively ON.
+# Omit a musician entirely from a monitor if they don't send to it.
+# Level -144 in Wing means "routed but silent"; omit those too.
+# ---------------------------------------------------------------------------
+
+monitors:
+  monitor_1:
+    bass:          -0.56
+    james-guitar:  -6.75
+    flute:         -8.78
+    violin:        3.20
+    james-vox:     0.16
+    priscilla-vox: -6.22
+    anna-vox:      -6.03
+    handheld:      -10.60
+    headset:       -30.20
+
+  monitor_2:
+    bass:          -32.66
+    conga-1:       -21.56
+    conga-2:       -21.33
+    bongos:        -21.76
+    james-guitar:  0.75
+    flute:         -7.84
+    violin:        -11.52
+    james-vox:     0.46
+    priscilla-vox: -0.34
+    anna-vox:      5.26
+    yolaine-vox:   5.83
+    handheld:      -11.53
+    headset:       -29.53
+
+  monitor_3:
+    james-guitar:  -7.56
+    flute:         -5.73
+    violin:        2.02
+    james-vox:     1.55
+    priscilla-vox: 2.19
+    anna-vox:      -9.41
+    yolaine-vox:   -10.74
+    handheld:      -12.19
+    headset:       -29.59
+
+  monitor_4:
+    bass:          5.60
+    conga-1:       -0.20
+    conga-2:       -0.27
+    bongos:        -5.40
+    james-guitar:  -12.21
+    flute:         -9.82
+    violin:        1.57
+    james-vox:     -2.41
+    priscilla-vox: -1.38
+    anna-vox:      -17.50
+    yolaine-vox:   -16.11
+    handheld:      -12.30
+    headset:       -29.98

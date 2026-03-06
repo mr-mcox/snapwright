@@ -1,0 +1,42 @@
+name: Flute
+color: 1
+icon: 318
+fader: -8.32
+trim: 3.2
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 248.2
+    tilt_on: false
+
+  eq:
+    on: true
+    model: SOUL
+    lf: 2
+    lg: 0
+    lmf: 6
+    lmf3: true
+    lmq: 5
+    lmg: 0
+    hmf: 3
+    hmf3: false
+    hmq: 5
+    hmg: 0
+    hf: 8
+    hg: 0
+
+  dynamics:
+    on: true
+    model: LA
+    ingain: 54
+    peak: 38
+    mode: COMP
+
+  gate:
+    on: true
+    model: PSE
+    threshold: -26
+    depth: 16.5
+    fast: false
+    peak: false

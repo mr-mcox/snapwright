@@ -1,0 +1,41 @@
+name: Overhead
+color: 8
+icon: 210
+fader: 3.46
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 208.8
+    tilt_on: false
+
+  eq:
+    on: true
+    model: STD
+    low_shelf:
+      gain: 0
+      freq: 80.2
+    bands:
+      - { freq: 200, gain: 0 }
+      - { freq: 601.4, gain: 0 }
+      - { freq: 1499.8, gain: 0 }
+      - { freq: 3990.5, gain: 0 }
+    high_shelf:
+      gain: 0
+      freq: 11999.3
+
+  dynamics:
+    on: false
+    model: COMP
+    thr: -10
+    ratio: 3
+
+  gate:
+    on: false
+    model: GATE
+    threshold: -40
+    range: 40
+    attack: 10
+    hold: 10
+    release: 199.4
+    ratio: "1:3"

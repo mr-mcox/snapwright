@@ -1,0 +1,41 @@
+name: Pricilla
+color: 1
+icon: 0
+fader: -0.13
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 94.6
+    tilt_on: false
+
+  eq:
+    on: true
+    model: SOUL
+    lf: 2
+    lg: 0
+    lmf: 5.9
+    lmf3: false
+    lmq: 5
+    lmg: -1.5
+    hmf: 4.9
+    hmf3: false
+    hmq: 5
+    hmg: 1.0
+    hf: 8
+    hg: 0
+
+  dynamics:
+    on: true
+    model: LA
+    ingain: 57
+    peak: 50
+    mode: COMP
+
+  gate:
+    on: true
+    model: PSE
+    threshold: -19
+    depth: 12
+    fast: false
+    peak: false

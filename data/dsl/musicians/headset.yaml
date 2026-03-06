@@ -1,0 +1,46 @@
+name: Headset
+color: 12
+icon: 105
+fader: -2.86
+mute: false
+trim: 0
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 213.4
+    hpf_slope: "12"
+    tilt_on: true
+    tilt: 0
+
+  eq:
+    on: true
+    model: STD
+    low_shelf:
+      gain: -1.5
+      freq: 96.7
+    bands:
+      - { freq: 559.6, gain: -9.3,  q: 5.09 }
+      - { freq: 250.0, gain: -13.3, q: 2.50 }
+      - { freq: 1356.1, gain: -5.1, q: 6.37 }
+      - { freq: 6994.9, gain: -1.4, q: 5.18 }
+    high_shelf:
+      gain: -0.7
+      freq: 10096.1
+
+  dynamics:
+    on: true
+    model: LA
+    ingain: 41
+    peak: 50
+    mode: LIM
+
+  gate:
+    on: true
+    model: RIDE
+    threshold: -40
+    hold: 3.16
+    range: 15
+    tgt: -29
+    spd: 20
+    ratio: 4

@@ -1,0 +1,41 @@
+name: James
+color: 1
+icon: 0
+fader: 0.58
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 101.7
+    tilt_on: false
+
+  eq:
+    on: true
+    model: SOUL
+    lf: 2
+    lg: 0
+    lmf: 5.7
+    lmf3: true
+    lmq: 5
+    lmg: -1.2
+    hmf: 2.2
+    hmf3: false
+    hmq: 5
+    hmg: 0.4
+    hf: 8
+    hg: 0
+
+  dynamics:
+    on: true
+    model: LA
+    ingain: 63
+    peak: 55
+    mode: COMP
+
+  gate:
+    on: true
+    model: PSE
+    threshold: -19
+    depth: 15
+    fast: false
+    peak: false
