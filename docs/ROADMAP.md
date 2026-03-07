@@ -79,11 +79,18 @@ From comparing James, Priscilla, and Levin Sunday Starters:
 
 ---
 
-## Current Phase: Phase 2 — Snapshot Evolution Analysis
+## ~~Phase 2: Snapshot Evolution Analysis~~ ✓ COMPLETE
 
-**Goal**: Batch-compare post-service snapshots against a Sunday Starter baseline to surface recurring adjustments worth promoting into DSL templates.
+**Goal**: Batch-compare post-service snapshots against a baseline to surface recurring adjustments worth promoting into DSL templates.
 
-**Full spec**: [`docs/phase-2-spec.md`](phase-2-spec.md)
+**What got built**:
+- `snapwright/evolution/` module: `significance` (threshold policy), `translate` (Wing paths → audio labels), `diff` (channel and snapshot diffing), `patterns` (batch pattern detection), `report` (markdown output)
+- `snapwright analyze-evolution` CLI command
+- Pi skill at `.pi/skills/snapshot-evolution/` for periodic analysis sessions
+- Session folder pattern at `data/evolution/` (intent + report + decisions per session)
+- Baseline strategy: rendered DSL for single-team, `Base.snap` for cross-team
+- Prototype written first, learnings captured, then TDD rewrite — 63 tests covering significance thresholds, translation correctness, and diff behaviour
+- First real session: `data/evolution/2026-03-07-james-over-time/`
 
 ---
 

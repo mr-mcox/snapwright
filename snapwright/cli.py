@@ -6,7 +6,7 @@ from pathlib import Path
 import click
 
 from snapwright.dsl.renderer import render_assembly
-from snapwright.evolution.diff import diff_snapshots
+from snapwright.evolution.diff import diff_snap_files
 from snapwright.evolution.patterns import find_patterns
 from snapwright.evolution.report import render_report
 
@@ -88,7 +88,7 @@ def analyze_evolution(
 
         diffs = []
         for snap_path in sorted(snapshots):
-            sd = diff_snapshots(baseline, snap_path)
+            sd = diff_snap_files(baseline, snap_path)
             sig = len(sd.significant_channel_diffs)
             click.echo(f"  {snap_path.name}: {sig} channel(s) with significant changes")
             diffs.append(sd)
