@@ -1,102 +1,153 @@
 ---
 name: snapshot-evolution
-description: Analyse how Wing mixer snapshots have evolved over time relative to a Sunday Starter baseline. Surfaces recurring adjustments worth promoting into DSL templates. Use when Matthew wants to review recent service trends and update team templates.
+description: Analyse how Wing mixer snapshots have evolved over time relative to a baseline. Surfaces recurring adjustments worth promoting into DSL templates. Supports single-team temporal analysis and cross-team instrument analysis.
 disable-model-invocation: true
 ---
 
 # Snapshot Evolution Analysis
 
-Batch-compare post-service Wing snapshots against a Sunday Starter baseline to surface
-recurring adjustments worth promoting into DSL templates.
+Batch-compare post-service Wing snapshots against a baseline to surface recurring
+adjustments worth promoting into DSL templates.
 
 ---
 
 ## Workflow
 
-### Step 1 — Gather inputs
+### Step 1 — Establish intent and frame
 
-Ask Matthew:
-1. **Baseline**: the Wing `.snap` file that was loaded at the start of services during the
-   analysis window. This is a `.snap` file (binary Wing format), not a DSL assembly file.
-   Sunday Starter reference snaps live in `data/reference/sunday-starters/`.
-2. **Post-service snapshots**: the `.snap` files saved at the end of services. Ask for the
-   directory or individual paths.
-3. **Team name** for labelling output (e.g. `james`).
+Ask Matthew two things:
 
-Confirm inputs, then run.
+1. **What's the analysis frame?**
+   - *Single team over time*: how has one team's sound drifted from the baseline across
+     multiple services? Baseline = the team's rendered Sunday Starter.
+   - *Cross-team instrument*: how do multiple teams handle the same instrument group
+     (e.g. drums, handheld, bass)? Baseline = `data/reference/Base.snap` (factory state).
 
-### Step 2 — Run the analysis
+2. **What's the focus?** (team name, instrument group, time window, or open question)
+
+Capture the intent — you'll write it to the session folder shortly.
+
+### Step 2 — Gather inputs
+
+**Baseline** — accept either:
+- A DSL assembly file (`assembly.yaml`): render it first, use the output as baseline
+  ```bash
+  cd /Users/mcox/dev/snapwright
+  .venv/bin/snapwright render <assembly-path> --output /tmp/baseline-rendered.snap
+  ```
+  Then use `/tmp/baseline-rendered.snap` as the baseline.
+- A `.snap` file: use directly.
+
+**Post-service snapshots** — ask for the directory or individual paths.
+Wing backup snapshots are typically on Matthew's machine; ask where they are.
+
+**Min occurrences threshold** — default 3. Ask only if Matthew wants to adjust.
+
+Confirm inputs before proceeding.
+
+### Step 3 — Create session folder
+
+```
+data/evolution/YYYY-MM-DD-<team>-<focus>/
+  intent.md     ← write now
+  report.md     ← written after analysis
+  decisions.md  ← appended during step 5
+```
+
+Write `intent.md` with: date, frame, baseline, snapshots, and the question being asked.
+
+### Step 4 — Run the analysis
 
 ```bash
 cd /Users/mcox/dev/snapwright
 .venv/bin/snapwright analyze-evolution \
   "<baseline>" \
   "<snapshot1>" "<snapshot2>" ... \
-  --output "evolution-<team>-report.md" \
-  --min-occurrences 3
+  --output "data/evolution/YYYY-MM-DD-<team>-<focus>/report.md" \
+  --min-occurrences <n>
 ```
 
-### Step 3 — Synthesize internally, then present themes
+### Step 5 — Synthesize internally, then present themes
 
-**Read the full report silently first. Do not present it.**
+**Read the full report silently. Do not present it.**
 
-Synthesize what you find into 3–6 themes. A theme is a cluster of related patterns that
-tell a coherent story — e.g. "vocal FX routing is consistently different from the baseline"
-or "several channel faders are substantially off". Good themes cut across channels; they
-name a problem, not just a list of facts.
+Synthesize into 3–6 themes. A theme names a coherent problem, not a list of facts.
+Good themes cut across channels. Examples: "reverb sends are consistently too hot across
+all vocalists", "three channels have faders substantially below where James runs them".
 
 For each theme:
 - One sentence naming the pattern
-- Rough confidence: how many channels/occurrences support it, any ⚠️ flags
-- One or two concrete examples (not exhaustive lists)
+- Confidence: occurrence count, consistency, any ⚠️ flags
+- One or two concrete examples — not exhaustive lists
 
-Present the themes as a short numbered list — aim for under 15 lines total. Then stop and
-ask: *"Which of these feels most worth acting on, or do you want to talk through any of
-them first?"*
+Present as a short numbered list (aim for under 15 lines). Then stop and ask:
+*"Which of these feels most worth acting on, or do you want to talk through any first?"*
 
-**Do not present the full report. Do not read suggestions aloud. Do not enumerate every
-channel.**
+**Do not enumerate every channel. Do not read the suggestions section aloud.**
 
-### Step 4 — Work through decisions one at a time
+### Step 6 — Work through decisions one at a time
 
 For each theme Matthew wants to act on:
-- Offer the specific suggestion in one sentence ("Consider raising Kick fader from -8.9 to
-  approximately 0 dB in the Sunday Starter")
+- State the specific suggestion in one sentence
+- Show a compact table if comparing before/after across multiple channels
 - Ask: accept, modify, or skip?
-- If accepted or modified, log immediately to `docs/decisions.md`:
+- If accepted or modified, append to `data/evolution/YYYY-MM-DD-<team>-<focus>/decisions.md`:
 
-```
+```markdown
 ### YYYY-MM-DD — [title]
 **Decision**: [what]
 **Rationale**: [pattern count, direction, median shift if relevant]
 **Category**: escalated | autonomous
 ```
 
-Move to the next decision. Keep the loop tight — one decision at a time, no preamble.
+Move to the next decision without preamble. One at a time.
 
-### Step 5 — Wrap up
+**Do not write to `docs/decisions.md`** — that file is for architectural decisions about
+the system, not mixing decisions.
 
-Once Matthew is done, summarise: how many decisions logged, which themes were skipped and
-why. Remind him that DSL file changes are Phase 4 scope — this skill surfaces signal,
+### Step 7 — Wrap up
+
+Summarise: decisions logged, themes skipped and why, anything surprising worth flagging
+for the next session. Note the session folder path.
+
+Remind Matthew: DSL file changes are Phase 4 scope. This skill surfaces signal;
 acting on it is a separate step.
 
 ---
 
-## Reading Patterns (internal reference — not for presentation)
+## Baseline Strategy (reference)
 
-**What makes a strong template candidate:**
-- Consistent direction (✓ consistent), no ⚠️ constant offset flag, count ≥ 4
-- Recent occurrences weighted higher than older ones
-- FX send routing, model changes, and threshold corrections are high-value if consistent
-- Monitor send levels are personal preferences — stable per team, worth baking in
-- Mixed direction (~ mixed direction) means context-dependent; skip unless Matthew flags it
+| Frame | Baseline | Rationale |
+|---|---|---|
+| Single team over time | Rendered DSL for that team, or a saved Sunday Starter `.snap` | Shows drift from intended state |
+| Cross-team instrument | `data/reference/Base.snap` | Common ancestor; shows what each team built on top |
 
-**⚠️ constant offset** means all deltas are identical — likely the baseline had a stale
-value corrected once and held, not a genuine recurring weekly adjustment. Worth naming as
-a theme ("baseline may have wrong values for X") but distinct from genuine service patterns.
+The rendered DSL is preferred for single-team analysis because it represents the *intended*
+state. As evolution sessions promote patterns back into the DSL, the rendered output
+converges with reality and diffs naturally shrink over time.
 
-**Significance thresholds** (already applied — changes below these are filtered):
-- Fader / send level: ≥ 2 dB | EQ gain: ≥ 1.5 dB | Frequency: ≥ 10% shift | Dynamics threshold: ≥ 2 dB
+---
+
+## Reading Patterns (internal — not for presentation)
+
+**Strong template candidates**: consistent direction (✓), no ⚠️ constant offset, count ≥ 4,
+with recent occurrences.
+
+**⚠️ constant offset**: all deltas identical — likely a stale baseline value corrected once
+and held. Worth surfacing as a theme ("baseline may have wrong model/value for X") but
+distinct from genuine recurring service adjustments.
+
+**~ mixed direction**: context-dependent (e.g. fader varies with who's singing). Not a
+template candidate unless Matthew flags it.
+
+**High-value pattern types**:
+- FX send routing (reverb/delay on/off) — structural preferences, stable per team
+- EQ/dynamics/gate model changes — if consistent, base likely had wrong preset loaded
+- Fader levels — check direction; consistent push in one direction = baseline is off
+- Monitor sends — personal preferences, tend to be stable per team
+
+**Significance thresholds** (already applied):
+Fader/send level ≥ 2 dB · EQ gain ≥ 1.5 dB · Frequency ≥ 10% shift · Dynamics threshold ≥ 2 dB
 
 ---
 
@@ -104,7 +155,8 @@ a theme ("baseline may have wrong values for X") but distinct from genuine servi
 
 - DSL source: `data/dsl/teams/`
 - Reference snapshots: `data/reference/sunday-starters/`
-- Decisions log: `docs/decisions.md`
+- Factory baseline: `data/reference/Base.snap`
+- Evolution sessions: `data/evolution/`
 - Phase spec: `docs/phase-2-spec.md`
 
 Promoting patterns to DSL files is **Phase 4** scope.
