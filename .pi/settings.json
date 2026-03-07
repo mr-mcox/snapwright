@@ -1,5 +1,20 @@
 {
   "skills": [
     ".pi/skills"
-  ]
+  ],
+  "packages": [
+    {
+      "source": "~/dev/pi-platform",
+      "skills": [".pi/skills/agent-brief"]
+    }
+  ],
+  "compaction": {
+    "reserveTokens": 8192,
+    "keepRecentTokens": 10000
+  },
+  "retry": {
+    "maxRetries": 5,
+    "baseDelayMs": 15000,
+    "maxDelayMs": 120000
+  }
 }

@@ -1,5 +1,30 @@
 # Decisions
 
+### 2026-03-06 — Monitor sends belong in the monitors: section, not musician entry sends
+**Decision**: Musician entry `sends:` is for submix/FX buses only. Monitor levels always live in the assembly `monitors:` section, regardless of whether canonical musician-file defaults exist yet. Both James and Priscilla now follow this pattern.
+**Rationale**: Two mechanisms for the same data creates maintenance confusion. The `monitors:` section preserves the monitor operator's view ("who hears what"). When canonical defaults eventually land in musician files, `monitors:` becomes sparse offsets and the intent is immediately legible.
+**Category**: escalated → decided
+
+### 2026-03-06 — Bus consolidation (4 → 2 instrument buses) caught double-routing bug
+**Decision**: Collapsed rhythm_house/stream + melodic_house/stream into inst_house/inst_stream. Piano was routing to all four buses, doubling itself in the FOH outputs.
+**Rationale**: The vocabulary change forced an explicit routing decision. The bug was invisible when four buses existed because the send levels looked "reasonable" individually. Sparsity as signal: fewer named buses means accidental sends stand out.
+**Category**: escalated → decided
+
+### 2026-03-06 — Generic musician files; team-specific processing in assembly overrides
+**Decision**: Musician files capture what is canonical about an instrument across all teams (e.g. flute SOUL EQ). Team-specific processing (James flute LA dynamics + PSE gate vs Priscilla flute no dynamics) lives in the assembly `overrides:` block. Validated by test asserting EQ is byte-identical between teams.
+**Rationale**: Improvements to a musician's core sound propagate to all teams automatically. Team deviations are explicit and visible as assembly-level overrides, not buried in diverging musician files.
+**Category**: escalated → decided
+
+### 2026-03-06 — Mute state is assembly-level, not musician-level
+**Decision**: `mute:` should not be set in musician files unless the channel is categorically always muted (e.g. area-mic.yaml). Spare mics (handheld, headset) have different active states per team and must be set in the assembly.
+**Rationale**: James team unmutes handheld/headset; Priscilla team leaves them muted (spares). A musician-file mute would bleed across all teams incorrectly. Same logic applies to fader and trim — assembly context determines active levels.
+**Category**: autonomous
+
+### 2026-03-06 — Two-team pressure test produced three concrete architecture corrections
+**Learning**: Building Priscilla as Phase 1.5 immediately revealed: (1) piano double-routing bug from 4-bus structure, (2) mute state ownership ambiguity, (3) monitor send placement inconsistency. The value of the second team was architectural validation, not just coverage.
+**Implication**: Each new team should be built against a clean reference snap and diff-tested before merging. The diff is the signal.
+**Category**: learning
+
 ### 2026-03-06 — YAML 1.1 bool-key fix via strict type check
 **Decision**: PyYAML parses `on:` as a boolean dict key (`True`). Fixed by post-processing loaded dicts with `type(k) is bool` check (not `k == True`, which would wrongly match integer 1 due to Python's `True == 1`).
 **Rationale**: Avoids dependency on ruamel.yaml or changing DSL field names. Strict type check is the minimal correct fix.

@@ -36,9 +36,6 @@ musicians:
     main_on: false
     sends:
       drums: 0.10
-      monitor_1: -5.80
-      monitor_2: -21.70
-      monitor_4: 0.00
 
   flute:
     inherits:
@@ -53,9 +50,6 @@ musicians:
       inst_stream: -6.14
       inst_house: -9.48
       reverb_long: -25.90
-      monitor_1: -0.65
-      monitor_2: -0.19
-      monitor_3: -19.82
 
   piano:
     inherits:
@@ -66,7 +60,6 @@ musicians:
       inst_house: -18.80
       inst_stream: -7.70
       reverb_medium: -23.00
-      monitor_4: -4.90
 
   guitar:
     inherits:
@@ -76,10 +69,6 @@ musicians:
     sends:
       inst_house: -9.30
       inst_stream: -9.90
-      monitor_1: -14.10
-      monitor_2: -10.40
-      monitor_3: -12.30
-      monitor_4: -1.50
 
   area-mic:
     inherits:
@@ -88,10 +77,6 @@ musicians:
     trim: 11.4
     sends:
       vocals: -10.69
-      monitor_1: -11.84
-      monitor_2: -11.84
-      monitor_3: -12.07
-      monitor_4: -14.14
 
   handheld:
     inherits:
@@ -154,4 +139,32 @@ buses:
 # empty; it will hold genuine offsets once canonical levels are established.)
 # ---------------------------------------------------------------------------
 
-monitors: {}
+# ---------------------------------------------------------------------------
+# Monitor sends — absolute levels (no musician-file defaults established yet).
+# Once canonical defaults exist (e.g. BGV at -10), entries here become sparse
+# additive offsets and the monitor operator's intent is immediately visible.
+# ---------------------------------------------------------------------------
+
+monitors:
+  monitor_1:
+    bass:     -5.80
+    flute:    -0.65
+    guitar:   -14.10
+    area-mic: -11.84
+
+  monitor_2:
+    bass:     -21.70
+    flute:    -0.19
+    guitar:   -10.40
+    area-mic: -11.84
+
+  monitor_3:
+    flute:    -19.82
+    guitar:   -12.30
+    area-mic: -12.07
+
+  monitor_4:
+    bass:     0.00
+    piano:    -4.90
+    guitar:   -1.50
+    area-mic: -14.14
