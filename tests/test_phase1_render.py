@@ -225,3 +225,130 @@ def test_print_full_diff_active_channels(rendered, reference):
             print(f"  ch{ch_num} ({name}): ✓ identical (2 sig fig)")
 
     print(f"\nTotal diff items across {len(DSL_CHANNELS)} channels: {total_diffs}")
+
+
+# ---------------------------------------------------------------------------
+# Priscilla team smoke tests
+# ---------------------------------------------------------------------------
+
+PRISCILLA_ASSEMBLY  = Path("data/dsl/teams/priscilla/assembly.yaml")
+PRISCILLA_REFERENCE = Path("data/reference/sunday-starters/pricilla team.snap")
+PRISCILLA_DSL_CHANNELS = [1, 2, 3, 4, 5, 13, 15, 16, 29, 37, 38]
+
+
+@pytest.fixture(scope="module")
+def pris_rendered():
+    return render_assembly(PRISCILLA_ASSEMBLY)
+
+
+@pytest.fixture(scope="module")
+def pris_reference():
+    return load_snap(PRISCILLA_REFERENCE)
+
+
+def test_priscilla_render_completes(pris_rendered):
+    assert "ae_data" in pris_rendered
+    assert len(pris_rendered["ae_data"]["ch"]) == 40
+
+
+def test_priscilla_channel_names(pris_rendered):
+    names = {
+        1: "Kick", 2: "Snare", 3: "Tom", 4: "Overhead",
+        13: "Flute", 15: "Piano", 16: "Guitar", 29: "area mic",
+        37: "Handheld", 38: "Headset",
+    }
+    for ch_num, expected in names.items():
+        actual = pris_rendered["ae_data"]["ch"][str(ch_num)].get("name")
+        assert actual == expected, f"ch{ch_num}: expected '{expected}', got '{actual}'"
+
+
+def test_priscilla_piano_eq_model(pris_rendered):
+    eq = pris_rendered["ae_data"]["ch"]["15"]["eq"]
+    assert eq["mdl"] == "E88"
+    assert eq["on"] is True
+
+
+def test_priscilla_piano_dynamics_model(pris_rendered):
+    dyn = pris_rendered["ae_data"]["ch"]["15"]["dyn"]
+    assert dyn["mdl"] == "D241"
+    assert dyn["on"] is True
+
+
+def test_priscilla_guitar_dynamics_model(pris_rendered):
+    dyn = pris_rendered["ae_data"]["ch"]["16"]["dyn"]
+    assert dyn["mdl"] == "B560"
+    assert dyn["on"] is True
+
+
+def test_priscilla_flute_eq_shared_with_james(pris_rendered, rendered):
+    """Flute SOUL EQ is identical between teams (comes from shared musician file)."""
+    james_eq  = rendered["ae_data"]["ch"]["14"]["eq"]
+    pris_eq   = pris_rendered["ae_data"]["ch"]["13"]["eq"]
+    for key in ("mdl", "lf", "lg", "lmf", "lmq", "lmg", "hmf", "hmq", "hmg", "hf", "hg"):
+        assert james_eq[key] == pris_eq[key], f"flute EQ field '{key}' differs between teams"
+
+
+def test_priscilla_flute_dynamics_off(pris_rendered):
+    """Priscilla flute has no dynamics processing (unlike James flute which uses LA)."""
+    dyn = pris_rendered["ae_data"]["ch"]["13"]["dyn"]
+    assert dyn["on"] is False
+
+
+def test_priscilla_guitar_sends_inst_house(pris_rendered, pris_reference):
+    r = pris_rendered["ae_data"]["ch"]["16"]["send"]["2"]
+    t = pris_reference["ae_data"]["ch"]["16"]["send"]["2"]
+    assert r["on"] is True
+    assert abs(r["lvl"] - t["lvl"]) < 0.05
+
+
+def test_priscilla_flute_monitor_1(pris_rendered, pris_reference):
+    r = pris_rendered["ae_data"]["ch"]["13"]["send"]["13"]
+    t = pris_reference["ae_data"]["ch"]["13"]["send"]["13"]
+    assert r["on"] is True
+    assert abs(r["lvl"] - t["lvl"]) < 0.05
+
+
+def test_priscilla_bass_monitor_4(pris_rendered, pris_reference):
+    """Bass sends to monitor 4 at 0 dB."""
+    r = pris_rendered["ae_data"]["ch"]["5"]["send"]["16"]
+    t = pris_reference["ae_data"]["ch"]["5"]["send"]["16"]
+    assert r["on"] is True
+    assert abs(r["lvl"] - t["lvl"]) < 0.05
+
+
+def test_priscilla_area_mic_muted(pris_rendered):
+    assert pris_rendered["ae_data"]["ch"]["29"]["mute"] is True
+
+
+def test_priscilla_input_shorthand(pris_rendered, pris_reference):
+    """Input shorthand (integer) resolves to stage-box correctly."""
+    r_src = pris_rendered["ae_data"]["ch"]["16"]["in"]["conn"]
+    t_src = pris_reference["ae_data"]["ch"]["16"]["in"]["conn"]
+    assert r_src.get("in") == t_src.get("in")
+
+
+def test_priscilla_print_diff(pris_rendered, pris_reference):
+    """Print diff for Priscilla channels. Run with -s to see output."""
+    print(f"\n{'='*70}")
+    print("DIFF: rendered Priscilla team vs pricilla team.snap")
+    print(f"{'='*70}")
+    total = 0
+    for ch_num in PRISCILLA_DSL_CHANNELS:
+        r = pris_rendered["ae_data"]["ch"][str(ch_num)]
+        t = pris_reference["ae_data"]["ch"][str(ch_num)]
+        name = t.get("name", f"ch{ch_num}")
+        diff = DeepDiff(r, t, ignore_numeric_type_changes=True, significant_digits=2)
+        n = sum(len(v) if isinstance(v, dict) else 1 for v in diff.values()) if diff else 0
+        total += n
+        if diff:
+            print(f"\n  ch{ch_num} ({name}): {n} difference(s)")
+            for change_type, changes in diff.items():
+                if isinstance(changes, dict):
+                    for path, detail in list(changes.items())[:5]:
+                        print(f"    {change_type}: {path} → {detail}")
+                else:
+                    for item in list(changes)[:5]:
+                        print(f"    {change_type}: {item}")
+        else:
+            print(f"  ch{ch_num} ({name}): ✓ identical (2 sig fig)")
+    print(f"\nTotal diff items across {len(PRISCILLA_DSL_CHANNELS)} channels: {total}")

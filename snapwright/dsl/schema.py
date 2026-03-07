@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +139,7 @@ class InstrumentLayer(BaseModel):
     fader: float | None = None
     trim: float | None = None
     main_on: bool | None = None   # send to main L/R output directly
+    sends: dict[str, float] = Field(default_factory=dict)  # logical bus name → dB level
     processing: ProcessingConfig | None = None
 
     @model_validator(mode="before")
@@ -209,4 +210,18 @@ class AssemblyDef(BaseModel):
     channels: dict[int, str]             # channel number → musician name
     inputs: dict[str, InputAssignment]   # musician name → stage input
     buses: dict[int, str]                # bus number → logical name
-    monitors: dict[str, dict[str, float]]  # monitor name → {musician: dB}
+    monitors: dict[str, dict[str, float]]  # monitor name → {musician: additive-dB offset}
+
+    @field_validator("inputs", mode="before")
+    @classmethod
+    def _coerce_input_shorthand(cls, v: Any) -> Any:
+        """Allow `kick: 2` shorthand for `kick: {source: stage-box, input: 2}`."""
+        if not isinstance(v, dict):
+            return v
+        result = {}
+        for musician, assignment in v.items():
+            if isinstance(assignment, int):
+                result[musician] = {"source": "stage-box", "input": assignment}
+            else:
+                result[musician] = assignment
+        return result

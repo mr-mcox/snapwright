@@ -86,16 +86,8 @@ def _render(assembly: AssemblyDef, dsl_root: Path) -> dict:
     # Build reverse map: logical bus name -> physical bus number (as string)
     bus_by_name: dict[str, str] = {name: str(num) for num, name in assembly.buses.items()}
 
-    # Build monitor send index: musician name -> {bus_key: level}
-    monitor_sends: dict[str, dict[str, float]] = {}
-    for monitor_name, musician_levels in assembly.monitors.items():
-        bus_key = bus_by_name.get(monitor_name)
-        if bus_key is None:
-            raise ValueError(
-                f"Monitor '{monitor_name}' not found in buses: {list(assembly.buses.values())}"
-            )
-        for musician_name, level in musician_levels.items():
-            monitor_sends.setdefault(musician_name, {})[bus_key] = level
+    # Build musician-to-channel reverse map for the monitors offset pass
+    musician_to_ch: dict[str, int] = {name: num for num, name in assembly.channels.items()}
 
     # Apply firmware patch to ALL channels (Base.snap predates these fields)
     for ch_dict in snap["ae_data"]["ch"].values():
@@ -114,13 +106,28 @@ def _render(assembly: AssemblyDef, dsl_root: Path) -> dict:
         _apply_identity(ch, resolved)
         _apply_input(ch, assembly, musician_name)
         _apply_processing(ch, resolved.get("processing", {}))
-        _apply_sends(
-            ch,
-            bus_by_name,
-            entry.sends,
-            monitor_sends.get(musician_name, {}),
-        )
+        _apply_sends(ch, bus_by_name, resolved.get("sends", {}))
         snap["ae_data"]["ch"][str(ch_num)] = ch
+
+    # Apply assembly monitors as additive offsets on top of musician-file defaults.
+    # If the musician has no default for a monitor (send is off), treat as absolute.
+    for monitor_name, musician_offsets in assembly.monitors.items():
+        bus_key = bus_by_name.get(monitor_name)
+        if bus_key is None:
+            raise ValueError(
+                f"Monitor '{monitor_name}' not found in buses: {list(assembly.buses.values())}"
+            )
+        for musician_name, offset in musician_offsets.items():
+            ch_num = musician_to_ch.get(musician_name)
+            if ch_num is None:
+                continue
+            send = snap["ae_data"]["ch"][str(ch_num)]["send"][bus_key]
+            if send.get("on"):
+                send["lvl"] = send["lvl"] + offset   # additive: shift from musician default
+            else:
+                send["lvl"] = offset                  # no default: treat as absolute
+                send["on"]  = True
+                send["mode"] = "PRE"
 
     return snap
 
@@ -337,10 +344,15 @@ def _apply_gate(ch: dict, gate: dict) -> None:
 def _apply_sends(
     ch: dict,
     bus_by_name: dict[str, str],
-    musician_sends: dict[str, float],
-    monitor_sends: dict[str, float],
+    all_sends: dict[str, float],
 ) -> None:
-    """Build the complete send dict for this channel."""
+    """Build the complete send dict for this channel from resolved sends.
+
+    PRE mode is used for monitor buses (physical bus number >= 13).
+    POST mode is used for submix/FX buses (physical bus number < 13).
+    Logical names not found in bus_by_name are silently ignored (allows
+    musician files to reference buses that only exist on some teams).
+    """
     sends: dict[str, dict] = {}
 
     for key in _ALL_SEND_KEYS:
@@ -350,18 +362,12 @@ def _apply_sends(
             sends[key] = copy.deepcopy(_SEND_OFF_PRE)
         else:
             sends[key] = copy.deepcopy(_SEND_OFF_POST)
-
-    # Submix / FX sends (POST, buses 1-12)
-    for logical_name, level in musician_sends.items():
+    for logical_name, level in all_sends.items():
         bus_key = bus_by_name.get(logical_name)
         if bus_key is None:
-            raise ValueError(f"Send target '{logical_name}' not found in buses")
-        sends[bus_key]["on"]  = True
-        sends[bus_key]["lvl"] = level
-
-    # Monitor sends (PRE, buses 13-16)
-    for bus_key, level in monitor_sends.items():
-        sends[bus_key]["on"]  = True
-        sends[bus_key]["lvl"] = level
-
+            continue  # silently skip — this bus isn't in this team's assembly
+        is_monitor = int(bus_key) >= 13
+        sends[bus_key]["on"]   = True
+        sends[bus_key]["lvl"]  = level
+        sends[bus_key]["mode"] = "PRE" if is_monitor else "POST"
     ch["send"] = sends

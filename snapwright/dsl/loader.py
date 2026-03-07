@@ -54,8 +54,7 @@ def load_assembly(path: str | Path) -> tuple[AssemblyDef, Path]:
 
 def resolve_musician(entry: MusicianEntry, dsl_root: Path) -> dict[str, Any]:
     """Fully resolve a musician entry: merge the inherits stack, apply overrides + offsets.
-
-    Returns a merged dict with keys: name, color, icon, mute, fader, processing.
+    Returns a merged dict with keys: name, color, icon, mute, fader, sends, processing.
     """
     # 1. Resolve inherits stack
     inherits = entry.inherits or []
@@ -63,21 +62,23 @@ def resolve_musician(entry: MusicianEntry, dsl_root: Path) -> dict[str, Any]:
     for ref in inherits:
         file_dict = _resolve_file(dsl_root / ref, dsl_root)
         merged = _deep_merge(merged, file_dict)
-
-    # 2. Apply inline identity overrides from the entry
     for field in ("name", "color", "icon", "mute", "fader", "trim", "main_on"):
         val = getattr(entry, field)
         if val is not None:
             merged[field] = val
+    # 3. Merge entry sends on top of musician-file sends (last writer wins per key)
+    if entry.sends:
+        merged_sends = dict(merged.get("sends", {}))
+        merged_sends.update(entry.sends)
+        merged["sends"] = merged_sends
 
-    # 3. Apply processing overrides
+    # 4. Apply processing overrides
     if entry.overrides:
         override_dict = entry.overrides.model_dump(exclude_none=True)
         if override_dict:
             existing = merged.get("processing", {})
             merged["processing"] = _deep_merge(existing, override_dict)
-
-    # 4. Apply level offsets
+    # 5. Apply level offsets
     if entry.offsets:
         if entry.offsets.fader != 0.0:
             merged["fader"] = merged.get("fader", 0.0) + entry.offsets.fader
@@ -85,10 +86,7 @@ def resolve_musician(entry: MusicianEntry, dsl_root: Path) -> dict[str, Any]:
             proc = merged.setdefault("processing", {})
             flt = proc.setdefault("filters", {})
             flt["gain"] = flt.get("gain", 0.0) + entry.offsets.gain
-
     return merged
-
-
 def _resolve_file(path: Path, dsl_root: Path) -> dict[str, Any]:
     """Load a YAML file and recursively resolve its own inherits."""
     raw: dict = _load_yaml(path)

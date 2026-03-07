@@ -1,12 +1,11 @@
-name: Flute
+name: Guitar
 color: 1
-icon: 318
+icon: 304
 
-# SOUL EQ is canonical across teams; dynamics/gate default to off and are overridden per-team.
 processing:
   filters:
     hpf_on: true
-    hpf_freq: 248.2
+    hpf_freq: 79.1
     tilt_on: false
 
   eq:
@@ -26,9 +25,18 @@ processing:
     hg: 0
 
   dynamics:
-    on: false
-    model: COMP
+    on: true
+    model: B560
+    thr: -11
+    ratio: 3
+    easy: true
 
   gate:
-    on: false
+    on: true
     model: GATE
+    threshold: -48
+    range: 40
+    attack: 10
+    hold: 10
+    release: 199.4
+    ratio: "1:3"

@@ -1,0 +1,33 @@
+name: Piano
+color: 3
+icon: 400
+
+processing:
+  eq:
+    on: true
+    model: E88
+    lf: 1.9
+    lg: -0.8
+    lq: LOW
+    lt: SHELV
+    lmf: 2.8
+    lmg: -2.5
+    lmq: 5
+    hmf: 5
+    hmg: 0.6
+    hmq: 5
+    hf: 7
+    hg: 0.2
+    hq: LOW
+    ht: SHELV
+
+  dynamics:
+    on: true
+    model: D241
+    thr: -26.5
+    ratio: 3
+    att: 9.85
+    rel: 369.1
+    lim: -10
+    lrel: 396.5
+    auto: true

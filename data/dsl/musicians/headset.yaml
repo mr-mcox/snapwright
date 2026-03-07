@@ -2,7 +2,6 @@ name: Headset
 color: 12
 icon: 105
 fader: -2.86
-mute: false
 trim: 0
 
 processing:
