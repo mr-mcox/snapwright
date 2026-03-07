@@ -101,6 +101,15 @@ Close the loop: diff → DSL updates → regenerate.
 
 ---
 
+## Future: Architecture Review
+
+Before or alongside Phase 3, step back and review how the whole system has evolved.
+Potential outputs: a system diagram, assessment of whether Phase 1 DSL/renderer code
+needs a TDD rewrite similar to the Phase 2 evolution module, and a decision on whether
+any cross-phase refactoring is warranted before adding more complexity.
+
+---
+
 ## Key reference files
 - `data/reference/Base.snap` — BCF base configuration
 - `data/reference/sunday-starters/James.snap` — primary reference for steel thread
