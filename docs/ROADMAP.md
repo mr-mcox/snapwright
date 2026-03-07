@@ -4,9 +4,9 @@
 
 **Goal**: Prove end-to-end round-trip without loss on a single channel. Build reusable Wing JSON tooling. ✓ Done.
 
-## Current Phase: Phase 1 — Instrument-Frame DSL + Team Generation
+## ~~Phase 1: Instrument-Frame DSL + Team Generation~~ ✓ COMPLETE
 
-**Start**: create branch `phase-1-instrument-dsl` off main.
+**Goal**: Design real DSL from instrument/musician frame. Render full team snapshots (James + Priscilla). Replace manual partial-load workflow.
 
 ### What the structural analysis revealed
 
@@ -79,11 +79,11 @@ From comparing James, Priscilla, and Levin Sunday Starters:
 
 ---
 
-## Phase 2: Semantic Diffing
+## Current Phase: Phase 2 — Snapshot Evolution Analysis
 
-Compare expected vs actual snapshots. LLM-interpreted reports.
+**Goal**: Batch-compare post-service snapshots against a Sunday Starter baseline to surface recurring adjustments worth promoting into DSL templates.
 
-**Physical layout**: Unchanged from Phase 1 — still explicit in assembly files.
+**Full spec**: [`docs/phase-2-spec.md`](phase-2-spec.md)
 
 ---
 
