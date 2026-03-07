@@ -90,10 +90,13 @@ def _flatten_channel(ch: dict) -> dict[str, Any]:
     for k, v in ch.get("gate", {}).items():
         out[f"gate.{k}"] = v
 
-    # Sends — only tracked sub-keys, only buses 1-16
+    # Sends — only tracked sub-keys, only named buses (skip vestigial unlabeled buses)
+    from snapwright.evolution.translate import BUS_NAMES
     for bus_num, send in ch.get("send", {}).items():
         if not bus_num.isdigit():
             continue
+        if bus_num not in BUS_NAMES:
+            continue  # skip unnamed/vestigial buses (e.g. bus 7, 8)
         for sub in _SEND_TRACKED:
             if sub in send:
                 out[f"send.{bus_num}.{sub}"] = send[sub]

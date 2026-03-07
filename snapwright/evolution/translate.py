@@ -100,7 +100,7 @@ _DYN_MODEL_EXTRAS: dict[str, dict[str, str]] = {
         "con": "comp on", "cthr": "comp threshold",
         "crec": "comp recovery", "cfast": "comp fast", "cgain": "comp gain",
     },
-    "LA": {"ingain": "input gain"},
+    "LA": {"ingain": "gain", "peak": "peak reduction"},
     "NSTR": {"in": "input gain", "out": "output gain"},
     "CMB": {},
     "9000C": {},

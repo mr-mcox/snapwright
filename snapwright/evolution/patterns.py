@@ -55,6 +55,15 @@ class Pattern:
         return all(d > 0 for d in deltas) or all(d < 0 for d in deltas)
 
     @property
+    def constant_offset(self) -> bool:
+        """True if all numeric deltas are identical — may indicate a stale baseline
+        rather than a genuine recurring adjustment."""
+        deltas = [o.delta for o in self.occurrences if o.delta is not None]
+        if len(deltas) < 2:
+            return False
+        return len(set(round(d, 3) for d in deltas)) == 1
+
+    @property
     def recent_count(self) -> int:
         """Occurrences in the second half of the batch (most recent snapshots)."""
         n = len(self.occurrences)

@@ -118,7 +118,8 @@ def render_report(
             for p in ch_patterns:
                 direction = " ✓ consistent" if p.consistent_direction else " ~ mixed direction"
                 recency = f", {p.recent_count} recent" if p.recent_count > 0 else ""
-                lines.append(f"**{p.section} — {p.label}** ({p.count}×{recency}{direction})")
+                offset_note = " ⚠️ constant offset" if p.constant_offset else ""
+                lines.append(f"**{p.section} — {p.label}** ({p.count}×{recency}{direction}{offset_note})") 
                 lines.append("")
                 for o in p.occurrences:
                     date_str = f" [{o.date}]" if o.date else ""
