@@ -1,6 +1,7 @@
 ---
 name: snapshot-evolution
 description: Analyse how Wing mixer snapshots have evolved over time relative to a Sunday Starter baseline. Surfaces recurring adjustments worth promoting into DSL templates. Use when Matthew wants to review recent service trends and update team templates.
+disable-model-invocation: true
 ---
 
 # Snapshot Evolution Analysis
@@ -8,95 +9,94 @@ description: Analyse how Wing mixer snapshots have evolved over time relative to
 Batch-compare post-service Wing snapshots against a Sunday Starter baseline.
 Produces a report of recurring changes and concrete suggestions for DSL template updates.
 
-Run every 1–3 months after a batch of services has accumulated.
-
 ---
 
 ## Workflow
 
-### Step 1 — Confirm baseline and snapshots
+### Step 1 — Gather inputs
 
-Ask Matthew:
-- Which team? (default: James)
-- Which baseline snapshot? (the Sunday Starter loaded at the start of services)
-- Which post-service snapshots to include? (files saved at end of services)
+Ask Matthew for:
 
-**Simulation defaults** (for testing without new data):
-- Baseline: `data/reference/sunday-starters/james-starter-2025-06-01.snap`
-- Snapshots: the July–November 2025 James snapshots in the Wing backup directory
-  ```
-  SNAP_DIR="/Users/mcox/Documents/Wing Backup/2025-12-14/snapshots"
-  $SNAP_DIR/2025-07-27 James.snap
-  $SNAP_DIR/2025-08-10 James.snap
-  $SNAP_DIR/2025-08-24 James.snap
-  $SNAP_DIR/James 2025-09-21.snap
-  $SNAP_DIR/James 2025-10-05.snap
-  $SNAP_DIR/2025-11-02James.snap
-  ```
+1. **Baseline snapshot** — the Wing `.snap` file that was loaded at the start of services
+   during the period being analysed. This is a binary snapshot file (`.snap`), not a DSL
+   assembly file. Sunday Starter snapshots for reference teams live in
+   `data/reference/sunday-starters/`. Matthew may also point to a file elsewhere on disk.
+
+2. **Post-service snapshots** — the `.snap` files saved at the end of services.
+   Ask for the directory or individual file paths. These are typically in the Wing backup
+   folder on Matthew's machine.
+
+3. **Team name** (for labelling the report output, e.g. `james`, `priscilla`).
+
+4. **Min occurrences threshold** — how many snapshots must show the same change before
+   it's flagged as a pattern. Default: 3. Ask only if Matthew wants to adjust it.
+
+Once you have the inputs, confirm them before running.
 
 ### Step 2 — Run the analysis
 
 ```bash
 cd /Users/mcox/dev/snapwright
 .venv/bin/snapwright analyze-evolution \
-  "<baseline>" \
+  "<baseline-path>" \
   "<snapshot1>" "<snapshot2>" ... \
-  --output evolution-report.md \
-  --min-occurrences 3
+  --output "evolution-<team>-report.md" \
+  --min-occurrences <n>
 ```
 
 ### Step 3 — Read and present the report
 
-Read `evolution-report.md` in full, then present findings in this order:
+Read the generated report in full, then present findings in this order:
 
-1. **Summary line**: N patterns found across M channels. Briefly note anything surprising.
+1. **Summary**: N patterns across M channels. Flag anything immediately striking.
 
 2. **High-signal patterns** — consistent direction, no ⚠️ constant offset flag, count ≥ 4:
-   Present these channel by channel. For each, state what changed and by how much.
+   Present channel by channel. For each: what changed, by how much, how recently.
 
-3. **Constant-offset patterns** (⚠️ flag): Note these separately.
-   These suggest the baseline had a stale value that got corrected once and held.
-   Ask Matthew: "Does this match your memory? Should we just update the base?"
+3. **Constant-offset patterns** (⚠️ flag): Present separately.
+   These suggest the baseline had a stale value corrected once and held — not a recurring
+   weekly adjustment. Ask Matthew: "Does this match your memory? Should we update the base?"
 
-4. **Mixed-direction patterns**: Flag these as "situational — not ready to promote."
+4. **Mixed-direction patterns**: Flag as situational — not ready to promote.
 
-5. **Suggestions section**: Read the high-confidence suggestions aloud (concisely).
+5. **Suggestions**: Read the high-confidence suggestions concisely.
    Ask Matthew which ones to act on.
 
-### Step 4 — Decide and log
+### Step 4 — Log decisions
 
-For each suggestion Matthew wants to act on:
+For each suggestion Matthew wants to act on, append to `docs/decisions.md`:
 
-- Note it in `docs/decisions.md` using the standard format:
-  ```
-  ### YYYY-MM-DD — [title]
-  **Decision**: [what changed]
-  **Rationale**: [why — reference the pattern count and direction]
-  **Category**: escalated | autonomous
-  ```
+```
+### YYYY-MM-DD — [title]
+**Decision**: [what]
+**Rationale**: [why — reference pattern count and direction]
+**Category**: escalated | autonomous
+```
 
-- Remind Matthew that DSL changes are Phase 4 scope (promotion + regeneration).
-  This skill produces the *signal*; acting on it is a separate step.
+Remind Matthew: DSL file changes are Phase 4 scope. This skill surfaces the signal;
+acting on it is a separate step.
 
 ---
 
-## Interpreting the Report
+## Reading the Report
 
-**Pattern metadata key:**
-- `(6×, 3 recent ✓ consistent)` — changed 6 times total, 3 in the second half of the batch (recent), all in the same direction
-- `⚠️ constant offset` — all deltas are identical; likely a stale baseline value corrected once, not a genuine recurring adjustment
+**Pattern metadata:**
+- `(6×, 3 recent ✓ consistent)` — 6 occurrences total, 3 in the second half of the batch,
+  all in the same direction
+- `⚠️ constant offset` — all deltas identical; likely a stale baseline value, not a genuine
+  recurring adjustment
 - `~ mixed direction` — changed both ways; situational, not a template candidate
 
 **What to look for:**
-- High count + consistent + recent + no constant-offset flag → strong template candidate
-- Send level/on changes to FX buses → routing preferences worth baking in
-- Fader movements → check if consistent direction; mixed means singer-dependent
-- Model changes (EQ/dynamics/gate) → high-value if consistent; may mean base had wrong preset loaded
-- Monitor sends → capture preferences; these are personal and tend to be stable per team
+- High count + consistent + recent + no ⚠️ → strong template candidate
+- FX send changes (reverb/delay on/off, level) → routing preferences worth baking in
+- Fader movements → check direction consistency; mixed means context-dependent
+- EQ/dynamics/gate model changes → high-value if consistent; base may have had wrong preset
+- Monitor sends → personal preferences, tend to be stable per team
 
-**Significance thresholds** (already applied by the tool):
+**Significance thresholds** (applied by the tool — changes below these are filtered out):
 - Fader / send level: ≥ 2 dB
-- EQ gain: ≥ 1.5 dB
+- EQ gain: ≥ 1.5 dB  
 - Frequency: ≥ 10% relative shift
 - Dynamics threshold: ≥ 2 dB
 
@@ -106,9 +106,8 @@ For each suggestion Matthew wants to act on:
 
 - DSL source: `data/dsl/teams/`
 - Reference snapshots: `data/reference/sunday-starters/`
-- Wing backup snapshots: `/Users/mcox/Documents/Wing Backup/2025-12-14/snapshots/`
 - Decisions log: `docs/decisions.md`
 - Phase spec: `docs/phase-2-spec.md`
-- Roadmap: `docs/ROADMAP.md`
 
-Promoting patterns to DSL templates is **Phase 4** scope. This skill is **Phase 2** — surface the signal, Matthew decides.
+Promoting patterns to DSL templates is **Phase 4** scope. This skill is **Phase 2** —
+surface the signal, Matthew decides.
