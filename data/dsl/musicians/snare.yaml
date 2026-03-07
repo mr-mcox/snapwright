@@ -1,0 +1,50 @@
+name: Snare
+color: 8
+icon: 202
+fader: -6.89
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 107.7
+    tilt_on: false
+
+  eq:
+    on: true
+    model: STD
+    low_shelf:
+      gain: 0
+      freq: 80.2
+    bands:
+      - { freq: 197.1, gain: 0.1,  q: 1.80 }
+      - { freq: 601.4, gain: -2.9, q: 0.95 }
+      - { freq: 1499.8, gain: 0 }
+      - { freq: 3933.5, gain: 1.0, q: 0.98 }
+    high_shelf:
+      gain: -0.1
+      freq: 10771.6
+
+  dynamics:
+    on: true
+    model: ECL33
+    leveler:
+      on: true
+      threshold: -6
+      recovery: 50
+      fast: true
+    compressor:
+      on: true
+      threshold: -24
+      ratio: 3
+      recovery: 100
+      fast: true
+
+  gate:
+    on: true
+    model: GATE
+    threshold: -32.5
+    range: 50
+    attack: 0
+    hold: 10
+    release: 80.2
+    ratio: "1:4"

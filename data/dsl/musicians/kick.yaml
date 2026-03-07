@@ -1,0 +1,53 @@
+name: Kick
+color: 8
+icon: 200
+fader: -3.33
+
+processing:
+  filters:
+    hpf_on: false
+    hpf_freq: 198.6
+    lpf_on: true
+    lpf_freq: 223.6
+    tilt_on: true
+    tilt: 0
+
+  eq:
+    on: true
+    model: STD
+    low_shelf:
+      gain: 2.8
+      freq: 61.9
+    bands:
+      - { freq: 177.0,  gain: 5.7,  q: 2.77 }
+      - { freq: 601.4,  gain: 0 }
+      - { freq: 1499.8, gain: 0 }
+      - { freq: 3961.9, gain: -15 }
+    high_shelf:
+      gain: -15
+      freq: 11999.3
+
+  dynamics:
+    on: true
+    model: ECL33
+    leveler:
+      on: true
+      threshold: -5
+      recovery: 50
+      fast: true
+    compressor:
+      on: true
+      threshold: -15
+      ratio: 3
+      recovery: 100
+      fast: true
+
+  gate:
+    on: false
+    model: GATE
+    threshold: -40
+    range: 40
+    attack: 10
+    hold: 10
+    release: 199.4
+    ratio: "1:3"

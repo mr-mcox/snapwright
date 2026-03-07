@@ -19,6 +19,15 @@ On any new session:
 
 ---
 
+## Git Workflow
+
+- One branch per phase: `phase-N-<short-description>` off main
+- Work freely on the branch; commits as granular as useful
+- Squash merge to main when the phase is validated: `git merge --squash phase-N-...`
+- One commit on main per phase summarising what it delivered
+- Phase 0 is already on main with working commits — history is as-is
+---
+
 ## Escalation Triggers (pause and show Matthew)
 
 These encode **domain architecture** — decisions that require audio engineering knowledge or that set the contract between Matthew and the system.

@@ -1,0 +1,47 @@
+name: Conga 1
+color: 1
+icon: 215
+fader: -4.33
+
+processing:
+  filters:
+    hpf_on: false
+    tilt_on: false
+
+  eq:
+    on: true
+    model: E88
+    lf: 2
+    lg: 0
+    lq: LOW
+    lt: SHELV
+    lmf: 3
+    lmg: 0
+    lmq: 5
+    hmf: 5
+    hmg: 0
+    hmq: 5
+    hf: 7
+    hg: 0
+    hq: LOW
+    ht: SHELV
+
+  dynamics:
+    on: true
+    model: 9000C
+    gain: 4
+    thr: -9.5
+    ratio: 3.3
+    fast: true
+    rel: 398.8
+    peak: false
+
+  gate:
+    on: true
+    model: 9000G
+    threshold: -29.5
+    range: 40
+    hold: 50.8
+    release: 806.5
+    fast: true
+    mode: GATE

@@ -1,0 +1,43 @@
+name: Violin
+color: 1
+icon: 308
+fader: -1.22
+trim: 0.2
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 103.9
+    tilt_on: false
+
+  eq:
+    on: true
+    model: SOUL
+    lf: 2
+    lg: -1.6
+    lmf: 2.7
+    lmf3: false
+    lmq: 5
+    lmg: -1.7
+    hmf: 2.6
+    hmf3: false
+    hmq: 5
+    hmg: -0.1
+    hf: 8
+    hg: 0
+
+  dynamics:
+    on: false
+    model: COMP
+    thr: -10.5
+    ratio: 3
+
+  gate:
+    on: false
+    model: GATE
+    threshold: -61
+    range: 40
+    attack: 10
+    hold: 10
+    release: 199.4
+    ratio: "1:2"

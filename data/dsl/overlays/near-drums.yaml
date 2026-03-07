@@ -1,0 +1,17 @@
+# Applied to any vocal or instrument mic positioned near the drum kit.
+# Tightens gating and raises HPF to reject bleed.
+# Apply to both vocals and instruments — drum wash affects all nearby mics.
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 120
+
+  gate:
+    on: true
+    model: GATE
+    threshold: -30
+    range: 30
+    attack: 5
+    hold: 15
+    release: 150

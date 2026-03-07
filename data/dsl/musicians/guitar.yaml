@@ -1,0 +1,42 @@
+name: Guitar
+color: 1
+icon: 304
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 79.1
+    tilt_on: false
+
+  eq:
+    on: true
+    model: SOUL
+    lf: 2
+    lg: 0
+    lmf: 6
+    lmf3: true
+    lmq: 5
+    lmg: 0
+    hmf: 3
+    hmf3: false
+    hmq: 5
+    hmg: 0
+    hf: 8
+    hg: 0
+
+  dynamics:
+    on: true
+    model: B560
+    thr: -11
+    ratio: 3
+    easy: true
+
+  gate:
+    on: true
+    model: GATE
+    threshold: -48
+    range: 40
+    attack: 10
+    hold: 10
+    release: 199.4
+    ratio: "1:3"

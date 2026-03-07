@@ -1,0 +1,50 @@
+name: James
+color: 1
+icon: 306
+fader: 0.75
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 89.3
+    tilt_on: true
+    tilt: 2.0
+
+  eq:
+    on: true
+    model: PULSAR
+    eq1: true
+    1lb: 0.2
+    1latt: 4.5
+    1lf: "30"
+    1hw: 5
+    1hb: 0
+    1hf: "10k"
+    1hatt: 0
+    1hattf: "20k"
+    eq5: true
+    5lb: 2.7
+    5lf: "300"
+    5md: 4.2
+    5mf: "1k"
+    5hb: 0.1
+    5hf: "2k"
+
+  dynamics:
+    on: true
+    model: NSTR
+    in: 4.4
+    out: 3
+    att: 4
+    rel: 5
+    ratio: "3:1"
+
+  gate:
+    on: true
+    model: GATE
+    threshold: -60
+    range: 40
+    attack: 10
+    hold: 10
+    release: 199.4
+    ratio: "1:3"

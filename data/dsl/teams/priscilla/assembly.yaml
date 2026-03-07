@@ -1,0 +1,170 @@
+team_name: Priscilla Team
+
+# ---------------------------------------------------------------------------
+# Musicians
+# ---------------------------------------------------------------------------
+
+musicians:
+  kick:
+    inherits:
+      - musicians/kick.yaml
+    sends:
+      drums: -5.5
+
+  snare:
+    inherits:
+      - musicians/snare.yaml
+    sends:
+      drums: 0.10
+
+  tom:
+    inherits:
+      - musicians/tom.yaml
+    sends:
+      drums: -13.60
+
+  overhead:
+    inherits:
+      - musicians/overhead.yaml
+    sends:
+      drums: -1.70
+
+  bass:
+    inherits:
+      - musicians/bass.yaml
+    fader: -144.0
+    main_on: false
+    sends:
+      drums: 0.10
+
+  flute:
+    inherits:
+      - musicians/flute.yaml
+    fader: -5.90
+    trim: 1.3
+    main_on: false
+    overrides:
+      filters:
+        hpf_freq: 255.4
+    sends:
+      inst_stream: -6.14
+      inst_house: -9.48
+      reverb_long: -25.90
+
+  piano:
+    inherits:
+      - musicians/piano.yaml
+    fader: -9.98
+    main_on: false
+    sends:
+      inst_house: -18.80
+      inst_stream: -7.70
+      reverb_medium: -23.00
+
+  guitar:
+    inherits:
+      - musicians/guitar.yaml
+    fader: -9.73
+    main_on: false
+    sends:
+      inst_house: -9.30
+      inst_stream: -9.90
+
+  area-mic:
+    inherits:
+      - musicians/area-mic.yaml
+    fader: -20.25
+    trim: 11.4
+    sends:
+      vocals: -10.69
+
+  handheld:
+    inherits:
+      - musicians/handheld.yaml
+    fader: -3.70
+
+  headset:
+    inherits:
+      - musicians/headset.yaml
+    fader: 4.35
+
+# ---------------------------------------------------------------------------
+# Physical layout
+# ---------------------------------------------------------------------------
+
+channels:
+  1:  kick
+  2:  snare
+  3:  tom
+  4:  overhead
+  5:  bass
+  13: flute
+  15: piano
+  16: guitar
+  29: area-mic
+  37: handheld
+  38: headset
+
+inputs:
+  kick:     2
+  snare:    3
+  tom:      5
+  overhead: 4
+  bass:     6
+  flute:    7
+  piano:    1
+  guitar:   9
+  area-mic: 16
+  handheld: 32
+  headset:  31
+
+buses:
+  1:  drums
+  2:  inst_house
+  3:  inst_stream
+  6:  vocals
+  9:  delay_slap
+  10: reverb_medium
+  11: reverb_long
+  12: delay_rhythm
+  13: monitor_1
+  14: monitor_2
+  15: monitor_3
+  16: monitor_4
+
+# ---------------------------------------------------------------------------
+# Monitor overrides — additive offsets from musician sends defined above.
+# (All monitor levels are currently encoded directly in musician sends above
+# since no team-canonical defaults exist yet. This section is intentionally
+# empty; it will hold genuine offsets once canonical levels are established.)
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Monitor sends — absolute levels (no musician-file defaults established yet).
+# Once canonical defaults exist (e.g. BGV at -10), entries here become sparse
+# additive offsets and the monitor operator's intent is immediately visible.
+# ---------------------------------------------------------------------------
+
+monitors:
+  monitor_1:
+    bass:     -5.80
+    flute:    -0.65
+    guitar:   -14.10
+    area-mic: -11.84
+
+  monitor_2:
+    bass:     -21.70
+    flute:    -0.19
+    guitar:   -10.40
+    area-mic: -11.84
+
+  monitor_3:
+    flute:    -19.82
+    guitar:   -12.30
+    area-mic: -12.07
+
+  monitor_4:
+    bass:     0.00
+    piano:    -4.90
+    guitar:   -1.50
+    area-mic: -14.14

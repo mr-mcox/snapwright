@@ -1,0 +1,44 @@
+name: Handheld
+color: 12
+icon: 102
+fader: -5.46
+
+processing:
+  filters:
+    hpf_on: true
+    hpf_freq: 301.4
+    hpf_slope: "12"
+    tilt_on: true
+    tilt: -1.75
+
+  eq:
+    on: true
+    model: STD
+    low_shelf:
+      gain: -4.4
+      freq: 80.8
+    bands:
+      - { freq: 202.9, gain: -2.8, q: 1.41 }
+      - { freq: 513.3, gain: -7.3, q: 1.09 }
+      - { freq: 2014.4, gain: -7.7, q: 3.36 }
+      - { freq: 3990.5, gain: -5.2, q: 3.60 }
+    high_shelf:
+      gain: -2.0
+      freq: 10771.6
+
+  dynamics:
+    on: true
+    model: LA
+    ingain: 39
+    peak: 47
+    mode: LIM
+
+  gate:
+    on: true
+    model: RIDE
+    threshold: -42.5
+    hold: 2.05
+    range: 15
+    tgt: -17
+    spd: 20
+    ratio: 4

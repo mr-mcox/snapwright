@@ -1,8 +1,12 @@
 # Snapwright Roadmap
 
-## Current Phase: Steel Thread (Phase 0)
+## ~~Phase 0: Steel Thread~~ ✓ COMPLETE — [phase-0-steel-thread commits on main]
 
-**Goal**: Prove end-to-end round-trip without loss on a single channel. Build reusable Wing JSON tooling. The channel-frame DSL used here is throwaway scaffolding — the real instrument-frame DSL gets designed in Phase 1.
+**Goal**: Prove end-to-end round-trip without loss on a single channel. Build reusable Wing JSON tooling. ✓ Done.
+
+## Current Phase: Phase 1 — Instrument-Frame DSL + Team Generation
+
+**Start**: create branch `phase-1-instrument-dsl` off main.
 
 ### What the structural analysis revealed
 
