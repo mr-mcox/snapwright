@@ -4,9 +4,9 @@
 
 **Goal**: Prove end-to-end round-trip without loss on a single channel. Build reusable Wing JSON tooling. ✓ Done.
 
-## Current Phase: Phase 1 — Instrument-Frame DSL + Team Generation
+## ~~Phase 1: Instrument-Frame DSL + Team Generation~~ ✓ COMPLETE
 
-**Start**: create branch `phase-1-instrument-dsl` off main.
+**Goal**: Design real DSL from instrument/musician frame. Render full team snapshots (James + Priscilla). Replace manual partial-load workflow.
 
 ### What the structural analysis revealed
 
@@ -79,11 +79,18 @@ From comparing James, Priscilla, and Levin Sunday Starters:
 
 ---
 
-## Phase 2: Semantic Diffing
+## ~~Phase 2: Snapshot Evolution Analysis~~ ✓ COMPLETE
 
-Compare expected vs actual snapshots. LLM-interpreted reports.
+**Goal**: Batch-compare post-service snapshots against a baseline to surface recurring adjustments worth promoting into DSL templates.
 
-**Physical layout**: Unchanged from Phase 1 — still explicit in assembly files.
+**What got built**:
+- `snapwright/evolution/` module: `significance` (threshold policy), `translate` (Wing paths → audio labels), `diff` (channel and snapshot diffing), `patterns` (batch pattern detection), `report` (markdown output)
+- `snapwright analyze-evolution` CLI command
+- Pi skill at `.pi/skills/snapshot-evolution/` for periodic analysis sessions
+- Session folder pattern at `data/evolution/` (intent + report + decisions per session)
+- Baseline strategy: rendered DSL for single-team, `Base.snap` for cross-team
+- Prototype written first, learnings captured, then TDD rewrite — 63 tests covering significance thresholds, translation correctness, and diff behaviour
+- First real session: `data/evolution/2026-03-07-james-over-time/`
 
 ---
 
@@ -98,6 +105,15 @@ Same DSL source renders simple/standard/complex snapshots.
 ## Phase 4: Promotion & Refinement
 
 Close the loop: diff → DSL updates → regenerate.
+
+---
+
+## Future: Architecture Review
+
+Before or alongside Phase 3, step back and review how the whole system has evolved.
+Potential outputs: a system diagram, assessment of whether Phase 1 DSL/renderer code
+needs a TDD rewrite similar to the Phase 2 evolution module, and a decision on whether
+any cross-phase refactoring is warranted before adding more complexity.
 
 ---
 

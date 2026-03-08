@@ -134,3 +134,18 @@
 **Decision**: Phase 1-2 use explicit physical assignments in assembly files. Phase 3 (complexity levels) is where a layout resolver gets built if needed.
 **Rationale**: Different complexity levels may need different channel counts and routing topologies, which is the first case where the system needs to make assignment decisions.
 **Category**: autonomous
+
+### 2026-03-07 — Evolution analysis session folder structure
+**Decision**: Each evolution analysis session gets its own folder at `data/evolution/YYYY-MM-DD-<team>-<focus>/` containing `intent.md`, `report.md`, and `decisions.md`. Mixing decisions (fader levels, EQ values, routing) go in the session folder, not in this file.
+**Rationale**: Separates mixing domain decisions from system architecture decisions. Session folders accumulate as queryable history and serve as handoff artifacts between sessions.
+**Category**: autonomous
+
+### 2026-03-07 — Evolution baseline strategy: nearest common ancestor
+**Decision**: Single-team temporal analysis uses the rendered DSL output (or a saved Sunday Starter snap) as baseline. Cross-team instrument analysis uses `data/reference/Base.snap`. In both cases the baseline is the nearest common ancestor — the intended or factory state the analysis diverges from.
+**Rationale**: Rendered DSL as baseline closes the feedback loop: as patterns get promoted back into the DSL, the rendered output converges with reality and diffs naturally shrink. Base.snap for cross-team gives a neutral common ancestor.
+**Category**: autonomous
+
+### 2026-03-07 — Prototype-then-TDD as explicit development pattern
+**Decision**: Exploratory code within a phase is written as prototype (structure secondary, goal is learning). Once the domain model stabilises and the code becomes load-bearing, start fresh with TDD — tests define the contract, prototype is reference material only, not foundation.
+**Rationale**: Phase 2 evolution module validated this pattern: prototype surfaced edge cases and natural seams; TDD rewrite produced cleaner structure (significance as first-class concept, pure translate function) that the prototype had tangled.
+**Category**: autonomous

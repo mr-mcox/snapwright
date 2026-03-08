@@ -28,6 +28,31 @@ On any new session:
 - Phase 0 is already on main with working commits — history is as-is
 ---
 
+## Development Pattern: Prototype → TDD
+
+This project uses a deliberate two-stage development pattern within phases:
+
+1. **Prototype first** — write exploratory code to learn the domain. Structure is
+   secondary. The goal is understanding: what does the output need to express, where
+   are the natural seams, what are the edge cases? Prototype code is reference material,
+   not foundation.
+
+2. **TDD into production code** — once the learning is captured, start fresh. Write
+   tests that define the contract first, let structure emerge from what the tests need.
+   Treat the prototype as a source of test cases, not as code to preserve.
+
+**Signals that prototype is ready to graduate**:
+- The domain model is stable (you know what inputs produce what outputs)
+- Edge cases are understood (significance thresholds, model-specific params, etc.)
+- The prototype is being trusted for real decisions (load-bearing)
+
+**What carries forward**: the *lessons*, not the code. Document what the prototype
+taught you before deleting it.
+
+Each phase should be evaluated on its own merits when revisited.
+
+---
+
 ## Escalation Triggers (pause and show Matthew)
 
 These encode **domain architecture** — decisions that require audio engineering knowledge or that set the contract between Matthew and the system.
