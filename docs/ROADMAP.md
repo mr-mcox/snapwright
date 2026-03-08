@@ -94,30 +94,44 @@ From comparing James, Priscilla, and Levin Sunday Starters:
 
 ---
 
-## Phase 3: Complexity Levels
+## Post-Phase 2: Feature-Driven Development
 
-Same DSL source renders simple/standard/complex snapshots.
+As of 2026-03-08, the project transitions from sequential phases to independent feature work.
+The domain is understood, the renderer is solid, and the remaining work decomposes into
+parallel features with light dependencies.
 
-**Physical layout**: This is where a layout resolver may be needed. Different complexity levels might use different channel counts, subgroup structures, or routing topologies. If simple mode skips subgroups, the channel-to-bus mapping changes. This is the first phase where the system needs to make physical assignment decisions.
+**Workflow**: `coding-workflow` skill with agent briefs per feature.  
+**Feature map**: `docs/features/README.md`  
+**Session management**: `/coding-workflow` prompt template  
+
+### Foundation features (fix existing gaps)
+- `clean-base` — rebuild Base.snap from Init, remove debris
+- `bus-naming` — renderer writes bus display names
+- `tags-ownership` — renderer owns channel/bus tags completely  
+- `infra-channels` — infrastructure channels (Piano, Computer, Talkback) in DSL
+
+### Complexity system (Phase 3 goal)
+- `dca-mgrp-config` — renderer manages DCA/mgrp names, faders, membership
+- `strategy-overlays` — composable strategies (gate disable, EQ model switch, DCA grouping)
+- `user-layers` — custom user layer rendering for beginner/advanced views
+
+### Investigations completed (2026-03-08)
+Five parallel investigations mapped the gaps. Results in `docs/investigations/`.
+Key findings: renderer has zero coverage of buses, DCAs, mgrps, tags, ce_data.
+Phase 1 renderer is solid enough to extend without rewrite (73 tests, all passing).
+Gate disable and EQ model switch already work — they just need a delivery mechanism.
 
 ---
 
-## Phase 4: Promotion & Refinement
+## Future: Promotion & Refinement
 
 Close the loop: diff → DSL updates → regenerate.
 
 ---
-
-## Future: Architecture Review
-
-Before or alongside Phase 3, step back and review how the whole system has evolved.
-Potential outputs: a system diagram, assessment of whether Phase 1 DSL/renderer code
-needs a TDD rewrite similar to the Phase 2 evolution module, and a decision on whether
-any cross-phase refactoring is warranted before adding more complexity.
-
----
-
 ## Key reference files
 - `data/reference/Base.snap` — BCF base configuration
+- `data/reference/Init.snap` — Factory-initialized Wing snapshot
 - `data/reference/sunday-starters/James.snap` — primary reference for steel thread
+- `docs/features/README.md` — feature map with dependencies
+- `docs/investigations/` — Phase 3 pre-investigations (A through E)
 - Project brief: `/Users/mcox/Downloads/wing-snapshot-dsl-project-brief.md`

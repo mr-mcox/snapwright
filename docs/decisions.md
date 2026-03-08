@@ -149,3 +149,38 @@
 **Decision**: Exploratory code within a phase is written as prototype (structure secondary, goal is learning). Once the domain model stabilises and the code becomes load-bearing, start fresh with TDD — tests define the contract, prototype is reference material only, not foundation.
 **Rationale**: Phase 2 evolution module validated this pattern: prototype surfaced edge cases and natural seams; TDD rewrite produced cleaner structure (significance as first-class concept, pure translate function) that the prototype had tangled.
 **Category**: autonomous
+
+### 2026-03-08 — Transition from sequential phases to feature-driven development
+**Decision**: Post-Phase 2, the project moves from linear phases (snapwright-workflow) to independent feature work with agent briefs (coding-workflow). Features are decomposed with light dependencies and can be worked in parallel sessions.
+**Rationale**: The domain is understood (Phases 0-2 established Wing JSON, DSL, renderer). The remaining work (bus naming, tags, DCAs, mgrps, custom views, strategy overlays) is naturally parallel. Five investigations mapped all gaps. Sequential phases would serialize independent work unnecessarily.
+**Category**: escalated
+
+### 2026-03-08 — Clean break over backwards compatibility for Base.snap
+**Decision**: Rebuild Base.snap from Init.snap with only intentional configuration. The renderer will progressively own more of the snapshot (buses, DCAs, mgrps, tags, labels) rather than passing through stale Base.snap values. Every diff from Init should have a documented purpose.
+**Rationale**: Accumulated debris (phantom DCAs, broken mute groups, stale names, mystery channels) causes real problems. Backwards compatibility with the current messy state provides no value — snapshots are generated artifacts, not precious state.
+**Category**: escalated
+
+### 2026-03-08 — Strategy composability: named profiles over strategy flags
+**Decision**: Complexity levels delivered as named profiles (`snapwright render james --strategy beginner`) that are bundles of composable strategy flags. Individual flags also available for ad-hoc composition. Strategy config files separate from team assembly files — rendering takes both as inputs.
+**Rationale**: Modular strategies ("turn gates off for Filbert", "simplify EQ for Naomi") are more useful than rigid tiers. Named profiles provide convenience; individual flags provide flexibility. Separation from assembly keeps team config clean.
+**Category**: escalated
+
+### 2026-03-08 — Bus architecture: consolidate to single instrument bus pair
+**Decision**: Splitting instruments into melodic vs rhythm buses (4 buses) is unnecessary complexity for 90% of engineers/teams. Consolidate to a single instrument house/stream pair. Buses 4-5 (Melodic/House, Melodic/Stream) are no longer carrying signal and can be cleared. Buses 7-8 have no assignment and can be cleared. Leave blank slots for fader bank alignment (scrolling in groups of 4).
+**Rationale**: Only the largest groups with highly skilled engineers benefit from the melodic/rhythm split. Simplification serves the Phase 3 goal of making snapshots accessible to varying skill levels.
+**Category**: escalated
+
+### 2026-03-08 — Phase 1 renderer: extend, don't rewrite
+**Decision**: The Phase 1 renderer (73 tests, all passing) is solid enough to extend for new features. No TDD rewrite needed. New sections (buses, DCAs, mgrps, ce_data) will be added with TDD from day one since the domain is now documented.
+**Rationale**: Investigation D confirmed clean pipeline structure, correct model-switching, declarative send system. Architecture supports additive extension without surgery.
+**Category**: autonomous
+
+### 2026-03-08 — Two-layer DSL: Init.snap + infrastructure.yaml replaces opaque Base.snap
+**Decision**: Replace Base.snap as the rendering foundation with Init.snap (factory reset, never modified) + an infrastructure.yaml layer that explicitly declares every change from factory. Base.snap retained as historical reference only. The infrastructure layer is transparent YAML — auditable, version-controlled, evolvable.
+**Rationale**: Base.snap accumulated undocumented debris (phantom DCAs, stale names, mystery channels, accidental fader bumps). An opaque binary foundation hides bugs and prevents pi-assisted modifications. With Init as the base, every non-factory parameter has a documented purpose. Infrastructure components (oscillator, personal mixer layout, headset EQ, monitor config) can evolve incrementally without fear of hidden interactions.
+**Category**: escalated
+
+### 2026-03-08 — Personal mixer routing is team-specific DSL concern
+**Decision**: User Signal assignments (which musician feeds which personal mixer channel) belong in the team assembly. AES50 A.33-48 output routing (which slots carry USR vs MTX signals) and matrix bus names/stems are infrastructure. The assembly maps logical musician names to USR slots; the renderer resolves to physical channel numbers.
+**Rationale**: USR source assignments change per team (Lead 1 = Priscilla in James's team, CH 27 in Priscilla's team) and are easily forgotten when lineup changes. The output routing structure is identical across all configured teams. This split matches the existing infrastructure-vs-team pattern.
+**Category**: escalated
