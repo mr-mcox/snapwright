@@ -147,6 +147,10 @@ class InstrumentLayer(BaseModel):
     fader: float | None = None
     trim: float | None = None
     main_on: bool | None = None  # send to main L/R output directly
+    main_2_on: bool | None = None  # send to main.2 (stream) — infra channels
+    main_2_lvl: float | None = None  # main.2 routing level in dB
+    preins: str | None = None  # pre-insert effect slot name (e.g. 'FX10')
+    ptap: int | None = None  # Wing tap point (4=post-insert, 5=post-EQ; default=5)
     sends: dict[str, float] = Field(default_factory=dict)  # logical bus name → dB level
     processing: ProcessingConfig | None = None
 
@@ -189,8 +193,6 @@ class MusicianEntry(BaseModel):
     """
 
     inherits: list[str] | str | None = None
-
-    # Identity overrides (absolute — mask inherited values)
     name: str | None = None
     color: int | None = None
     icon: int | None = None
@@ -198,12 +200,13 @@ class MusicianEntry(BaseModel):
     fader: float | None = None
     trim: float | None = None
     main_on: bool | None = None
-
+    main_2_on: bool | None = None  # send to main.2 (stream)
+    main_2_lvl: float | None = None  # main.2 routing level in dB
+    preins: str | None = None  # pre-insert effect slot name (e.g. 'FX10')
+    ptap: int | None = None  # Wing tap point (4=post-insert, 5=post-EQ)
     # Processing
     overrides: ProcessingConfig | None = None
     offsets: LevelOffsets | None = None
-
-    # Sends to submix / FX buses (POST mode, logical bus name → dB level)
     sends: dict[str, float] = Field(default_factory=dict)
 
     @model_validator(mode="before")

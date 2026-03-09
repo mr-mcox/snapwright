@@ -23,6 +23,7 @@ from pathlib import Path
 from snapwright.dsl.loader import load_assembly, resolve_musician
 from snapwright.dsl.schema import AssemblyDef
 from snapwright.wing.defaults import channel_defaults, snap_template
+from snapwright.dsl.infrastructure import patch_channel_firmware
 from snapwright.wing.writer import save_snap
 
 # ---------------------------------------------------------------------------
@@ -167,6 +168,8 @@ def _patch_firmware(ch: dict) -> None:
     for field, value in _FLT_SLOPE_DEFAULTS.items():
         if field not in ch["flt"]:
             ch["flt"][field] = value
+    # Firmware Q correction: Init.snap uses ~1.0, current firmware uses √2
+    patch_channel_firmware(ch)
 
 
 def _apply_identity(ch: dict, resolved: dict) -> None:
@@ -184,6 +187,15 @@ def _apply_identity(ch: dict, resolved: dict) -> None:
         ch["in"]["set"]["trim"] = resolved["trim"]
     if "main_on" in resolved:
         ch["main"]["1"]["on"] = resolved["main_on"]
+    if "main_2_on" in resolved:
+        ch["main"]["2"]["on"] = resolved["main_2_on"]
+    if "main_2_lvl" in resolved:
+        ch["main"]["2"]["lvl"] = resolved["main_2_lvl"]
+    if "preins" in resolved:
+        ch["preins"]["ins"] = resolved["preins"]
+        ch["preins"]["on"] = True
+    if "ptap" in resolved:
+        ch["ptap"] = str(resolved["ptap"])
 
 
 def _apply_input(ch: dict, assembly: AssemblyDef, musician_name: str) -> None:
@@ -396,7 +408,7 @@ def _apply_gate(ch: dict, gate: dict) -> None:
         _apply_gate_extras(ch["gate"], gate)
     else:
         # Different model (PSE, RIDE, 9000G, …) — rebuild from scratch
-        new_gate: dict = {"on": on if on is not None else False, "mdl": model}
+        new_gate: dict = {"on": on if on is not None else False, "mdl": model, "mix": 100, "gain": 0}
         _apply_typed_gate_params(new_gate, gate)
         _apply_gate_extras(new_gate, gate)
         ch["gate"] = new_gate
