@@ -13,7 +13,7 @@ The rendering pipeline uses Base.snap as its foundation — an opaque binary wit
 
 ## Validation Target
 
-**Init.snap + infrastructure.yaml + James assembly.yaml should produce a snapshot that diffs cleanly against `/Users/mcox/Documents/Wing Backup/2025-12-14/James.snap`.**
+**Init.snap + infrastructure.yaml + James assembly.yaml should produce a snapshot that diffs cleanly against `data/reference/snapshots/james-2025-12-14.snap`.**
 
 "Diffs cleanly" means zero differences in infrastructure sections. Acceptable noise:
 - Float precision (Wing stores -2.799999714, we write -2.8 — within 0.01 is fine)
@@ -133,7 +133,7 @@ for all audio-consequential settings. Verify this in implementation.
 
 - Init.snap (`data/reference/Init.snap`) is the rendering foundation — never modified
 - Infrastructure YAML lives at `data/dsl/infrastructure.yaml`; single file
-- Validation target: Dec-14 James.snap at `/Users/mcox/Documents/Wing Backup/2025-12-14/James.snap`
+- Validation target: `data/reference/snapshots/james-2025-12-14.snap` (committed to repo)
 - Every value in infrastructure.yaml must be self-documenting — no unexplained parameters
 - `#M8` tags are NOT set in infrastructure.yaml — renderer owns all tag assignment
 - The existing channel pipeline (`_render()` for ae_data.ch DSL channels) must continue to work
