@@ -141,6 +141,11 @@ for all audio-consequential settings. Verify this in implementation.
 - **Tests are unit-level and behavior-focused**: test that a section can be modeled and renders
   to the correct snap path — not that specific values from the YAML appear in the snap.
   The diff against Dec-14 James.snap is the integration test.
+- **TDD driven by integration diff**: Use the integration diff against Dec-14 James.snap as a
+  map of what needs to work. From each diff section, derive focused unit tests that encode the
+  behavior (e.g., "FX slot 1 renders to ae_data.fx.1", "send mode for bus 3 on ch37 is POST",
+  "_normalize_yaml_keys converts boolean True key to 'on'"). Write the unit test first, watch
+  it fail, then implement. The integration diff tells you *what*; the unit tests are the contract.
 - Infrastructure channels (ch37-40) need explicit send mode rendering, same pattern as
   DSL channel renderer — Init.snap's PRE defaults for buses 1-8 are wrong
 
