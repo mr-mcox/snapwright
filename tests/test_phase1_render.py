@@ -217,8 +217,9 @@ def test_james_vox_monitor_1(rendered, reference):
 
 def test_print_full_diff_active_channels(rendered, reference):
     """Print a summary diff for all DSL-specified channels.
-
-    Run with: uv run pytest tests/test_phase1_render.py::test_print_full_diff_active_channels -s
+    Run with:
+        uv run pytest -s \\
+            tests/test_phase1_render.py::test_print_full_diff_active_channels
     """
     print(f"\n{'=' * 70}")
     print("DIFF: rendered James team vs James.snap (DSL channels only)")

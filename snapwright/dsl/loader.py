@@ -53,8 +53,10 @@ def load_assembly(path: str | Path) -> tuple[AssemblyDef, Path]:
 
 
 def resolve_musician(entry: MusicianEntry, dsl_root: Path) -> dict[str, Any]:
-    """Fully resolve a musician entry: merge the inherits stack, apply overrides + offsets.
-    Returns a merged dict with keys: name, color, icon, mute, fader, sends, processing.
+    """Fully resolve a musician entry.
+
+    Merges the inherits stack, applies overrides + offsets.
+    Returns a merged dict: name, color, icon, mute, fader, sends, processing.
     """
     # 1. Resolve inherits stack
     inherits = entry.inherits or []

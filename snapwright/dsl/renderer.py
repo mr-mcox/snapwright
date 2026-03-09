@@ -141,8 +141,9 @@ def _render(assembly: AssemblyDef, dsl_root: Path) -> dict:
     for monitor_name, musician_offsets in assembly.monitors.items():
         bus_key = bus_by_name.get(monitor_name)
         if bus_key is None:
+            known = list(assembly.buses.values())
             raise ValueError(
-                f"Monitor '{monitor_name}' not found in buses: {list(assembly.buses.values())}"
+                f"Monitor {monitor_name!r} not found in buses: {known}"
             )
         for musician_name, offset in musician_offsets.items():
             ch_num = musician_to_ch.get(musician_name)
@@ -259,14 +260,17 @@ def _apply_eq(ch: dict, eq: dict) -> None:
         ch["eq"] = new_eq
 
 
+def _apply_eq_shelf(target: dict, shelf: dict, prefix: str) -> None:
+    if shelf.get("gain") is not None:
+        target[f"{prefix}g"] = shelf["gain"]
+    if shelf.get("freq") is not None:
+        target[f"{prefix}f"] = shelf["freq"]
+
+
 def _apply_std_eq_fields(target: dict, eq: dict) -> None:
     """Write typed STD-model fields (low_shelf, bands, high_shelf)."""
     if eq.get("low_shelf"):
-        shelf = eq["low_shelf"]
-        if shelf.get("gain") is not None:
-            target["lg"] = shelf["gain"]
-        if shelf.get("freq") is not None:
-            target["lf"] = shelf["freq"]
+        _apply_eq_shelf(target, eq["low_shelf"], "l")
     if eq.get("bands"):
         for i, band in enumerate(eq["bands"][:4]):
             k = str(i + 1)
@@ -277,12 +281,7 @@ def _apply_std_eq_fields(target: dict, eq: dict) -> None:
             if band.get("q") is not None:
                 target[f"{k}q"] = band["q"]
     if eq.get("high_shelf"):
-        shelf = eq["high_shelf"]
-        if shelf.get("gain") is not None:
-            target["hg"] = shelf["gain"]
-        if shelf.get("freq") is not None:
-            target["hf"] = shelf["freq"]
-
+        _apply_eq_shelf(target, eq["high_shelf"], "h")
 
 def _apply_eq_extras(target: dict, eq: dict) -> None:
     """Pass through any non-declared EQ keys (SOUL, PULSAR, E88 params)."""
@@ -296,6 +295,28 @@ def _apply_eq_extras(target: dict, eq: dict) -> None:
 # ---------------------------------------------------------------------------
 
 _DECLARED_DYN_KEYS = {"on", "model", "leveler", "compressor"}
+
+
+def _apply_ecl33_leveler(new_dyn: dict, lv: dict) -> None:
+    new_dyn["lon"] = lv.get("on", False)
+    new_dyn["lthr"] = lv.get("threshold", -10.0)
+    new_dyn["lrec"] = str(int(lv.get("recovery", 50)))
+    new_dyn["lfast"] = lv.get("fast", False)
+
+
+def _apply_ecl33_compressor(new_dyn: dict, co: dict) -> None:
+    new_dyn["con"] = co.get("on", False)
+    new_dyn["cthr"] = co.get("threshold", -10.0)
+    new_dyn["ratio"] = co.get("ratio", 3.0)
+    new_dyn["crec"] = str(int(co.get("recovery", 100)))
+    new_dyn["cfast"] = co.get("fast", False)
+
+
+def _apply_dyn_extras(target: dict, dyn: dict) -> None:
+    """Copy undeclared dynamics keys straight through."""
+    for k, v in dyn.items():
+        if k not in _DECLARED_DYN_KEYS and v is not None:
+            target[k] = v
 
 
 def _apply_dynamics(ch: dict, dyn: dict) -> None:
@@ -312,29 +333,17 @@ def _apply_dynamics(ch: dict, dyn: dict) -> None:
             "cgain": 0,
         }
         if dyn.get("leveler"):
-            lv = dyn["leveler"]
-            new_dyn["lon"] = lv.get("on", False)
-            new_dyn["lthr"] = lv.get("threshold", -10.0)
-            new_dyn["lrec"] = str(int(lv.get("recovery", 50)))
-            new_dyn["lfast"] = lv.get("fast", False)
+            _apply_ecl33_leveler(new_dyn, dyn["leveler"])
         if dyn.get("compressor"):
-            co = dyn["compressor"]
-            new_dyn["con"] = co.get("on", False)
-            new_dyn["cthr"] = co.get("threshold", -10.0)
-            new_dyn["ratio"] = co.get("ratio", 3.0)
-            new_dyn["crec"] = str(int(co.get("recovery", 100)))
-            new_dyn["cfast"] = co.get("fast", False)
+            _apply_ecl33_compressor(new_dyn, dyn["compressor"])
         ch["dyn"] = new_dyn
-
     elif model is None or model == _DEFAULT_DYN_MODEL:
         # Same model as Base.snap — patch individual fields
         if on is not None:
             ch["dyn"]["on"] = on
         if model is not None:
             ch["dyn"]["mdl"] = model
-        for k, v in dyn.items():
-            if k not in _DECLARED_DYN_KEYS and v is not None:
-                ch["dyn"][k] = v
+        _apply_dyn_extras(ch["dyn"], dyn)
 
     else:
         # Different model (LA, NSTR, 9000C, …) — rebuild from scratch
@@ -344,11 +353,8 @@ def _apply_dynamics(ch: dict, dyn: dict) -> None:
             "mix": 100,
             "gain": 0,
         }
-        for k, v in dyn.items():
-            if k not in _DECLARED_DYN_KEYS and v is not None:
-                new_dyn[k] = v
+        _apply_dyn_extras(new_dyn, dyn)
         ch["dyn"] = new_dyn
-
 
 # ---------------------------------------------------------------------------
 # Gate
@@ -365,33 +371,35 @@ _TYPED_GATE_MAP = {
 _DECLARED_GATE_KEYS = {"on", "model"} | set(_TYPED_GATE_MAP.keys())
 
 
+def _apply_typed_gate_params(target: dict, gate: dict) -> None:
+    for dsl_key, wing_key in _TYPED_GATE_MAP.items():
+        if gate.get(dsl_key) is not None:
+            target[wing_key] = gate[dsl_key]
+
+
+def _apply_gate_extras(target: dict, gate: dict) -> None:
+    for k, v in gate.items():
+        if k not in _DECLARED_GATE_KEYS and v is not None:
+            target[k] = v
+
+
 def _apply_gate(ch: dict, gate: dict) -> None:
     model = gate.get("model")
     on = gate.get("on")
-
     if model is None or model == _DEFAULT_GATE_MODEL:
         # Same model as Base.snap — patch individual fields
         if on is not None:
             ch["gate"]["on"] = on
         if model is not None:
             ch["gate"]["mdl"] = model
-        for dsl_key, wing_key in _TYPED_GATE_MAP.items():
-            if gate.get(dsl_key) is not None:
-                ch["gate"][wing_key] = gate[dsl_key]
-        for k, v in gate.items():
-            if k not in _DECLARED_GATE_KEYS and v is not None:
-                ch["gate"][k] = v
+        _apply_typed_gate_params(ch["gate"], gate)
+        _apply_gate_extras(ch["gate"], gate)
     else:
         # Different model (PSE, RIDE, 9000G, …) — rebuild from scratch
         new_gate: dict = {"on": on if on is not None else False, "mdl": model}
-        for dsl_key, wing_key in _TYPED_GATE_MAP.items():
-            if gate.get(dsl_key) is not None:
-                new_gate[wing_key] = gate[dsl_key]
-        for k, v in gate.items():
-            if k not in _DECLARED_GATE_KEYS and v is not None:
-                new_gate[k] = v
+        _apply_typed_gate_params(new_gate, gate)
+        _apply_gate_extras(new_gate, gate)
         ch["gate"] = new_gate
-
 
 # ---------------------------------------------------------------------------
 # Sends

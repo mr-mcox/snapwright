@@ -55,18 +55,7 @@ class SnapshotDiff:
 _SEND_TRACKED = {"on", "lvl", "mode"}
 
 
-def _flatten_channel(ch: dict) -> dict[str, Any]:
-    """Flatten a channel dict into path→value for tracked params only."""
-    out: dict[str, Any] = {}
-
-    for key in ("fdr", "mute"):
-        if key in ch:
-            out[key] = ch[key]
-
-    for section in ("flt", "eq", "dyn", "gate"):
-        for k, v in ch.get(section, {}).items():
-            out[f"{section}.{k}"] = v
-
+def _flatten_sends(ch: dict, out: dict) -> None:
     for bus_num, send in ch.get("send", {}).items():
         if not bus_num.isdigit() or bus_num not in BUS_NAMES:
             continue
@@ -74,11 +63,26 @@ def _flatten_channel(ch: dict) -> dict[str, Any]:
             if sub in send:
                 out[f"send.{bus_num}.{sub}"] = send[sub]
 
+
+def _flatten_input(ch: dict, out: dict) -> None:
     for k, v in ch.get("in", {}).get("conn", {}).items():
         out[f"in.conn.{k}"] = v
     for k, v in ch.get("in", {}).get("set", {}).items():
         if k in ("trim", "inv"):
             out[f"in.set.{k}"] = v
+
+
+def _flatten_channel(ch: dict) -> dict[str, Any]:
+    """Flatten a channel dict into path→value for tracked params only."""
+    out: dict[str, Any] = {}
+    for key in ("fdr", "mute"):
+        if key in ch:
+            out[key] = ch[key]
+    for section in ("flt", "eq", "dyn", "gate"):
+        for k, v in ch.get(section, {}).items():
+            out[f"{section}.{k}"] = v
+    _flatten_sends(ch, out)
+    _flatten_input(ch, out)
 
     return out
 
