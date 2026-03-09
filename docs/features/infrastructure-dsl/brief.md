@@ -1,42 +1,40 @@
 ---
 feature: infrastructure-dsl
 date: 2026-03-08
-commit: 9b4bb7b
+commit: b8e5feb
 branch: main
-status: problem-space
-read-when: "starting or resuming the infrastructure layer design"
+status: solution-space
+read-when: "starting implementation of Init.snap + infrastructure.yaml rendering foundation"
 ---
 
 ## Problem
 
-The rendering pipeline currently uses Base.snap (an opaque binary with accumulated debris) as its foundation. Every rendered snapshot silently inherits wrong bus names, phantom DCA faders, broken mute group memberships, stale channel labels, and mystery configuration from Base.snap. There's no way to audit what's intentional vs accidental, and no way to evolve infrastructure components (monitor config, headset EQ, personal mixer routing) without manually editing a binary file on the Wing.
-
-The fix is a two-layer DSL: Init.snap (factory reset, the one opaque binary) + infrastructure.yaml (every change from factory documented with purpose). The renderer switches from `snap_template()` loading Base.snap to loading Init.snap and applying the infrastructure layer.
+The rendering pipeline uses Base.snap as its foundation — an opaque binary with accumulated debris (phantom faders, stale labels, mystery config). There's no way to audit what's intentional vs accidental, and no way to evolve infrastructure without manually editing a binary. The fix is Init.snap (factory reset) + infrastructure.yaml (every intentional change from factory, documented with purpose), replacing Base.snap entirely as the rendering foundation.
 
 ## Not Doing
 
-- Full coverage of every Init→Base diff on day one. Start with sections we actively need; unmodeled sections pass through from Init (correct by definition)
+- Full coverage of every Init→Base diff on day one; unmodeled sections pass through from Init (correct by definition)
 - Strategy overlays or complexity levels (separate feature)
-- Team-specific assembly changes (this is infrastructure only)
+- Team-specific assembly changes (infrastructure only)
 - ce_data.user layers (separate feature)
-- Console preference tuning (ce_data.cfg) — include the known preferences from Investigation A but don't exhaustively model every option
 
 ## Constraints
 
-- Init.snap (`data/reference/Init.snap`, Wing Edit 3.3.1) is the rendering foundation — never modified
-- Infrastructure YAML lives at `data/dsl/infrastructure.yaml` (single file to start; can split later if it grows)
-- Every value in infrastructure.yaml must have a comment or be self-documenting — no unexplained parameters
-- Investigation A is the primary reference for what to include (intentional infrastructure + active configuration categories)
-- The renderer's existing channel pipeline (`_render()` for ae_data.ch) must continue to work — infrastructure is additive
-- Existing tests (73) must continue to pass after switching from Base.snap to Init.snap + infrastructure
+- Init.snap (`data/reference/Init.snap`, schema v11) is the rendering foundation — never modified
+- Infrastructure YAML lives at `data/dsl/infrastructure.yaml`; single file to start
+- Every value in infrastructure.yaml must be self-documenting — no unexplained parameters
+- `#M8` tags are NOT set in infrastructure.yaml — renderer owns all tag assignment
+- Infrastructure.yaml explicitly omits: `#M8` pre-tags on ch1–24 (debris), JEN label on io.in.A.7 (debris), +0.5 dB gain on io.in.A.8–A.30 (debris)
+- The existing channel pipeline (`_render()` for ae_data.ch) must continue to work — infrastructure is additive
+- Existing 148 tests must continue to pass after switching from Base.snap to Init.snap
 - New infrastructure rendering code gets TDD from day one
 
 ## Escalation Triggers
 
-- If switching from Base.snap to Init.snap breaks more than 5 existing tests, pause — the schema differences may need a migration strategy
-- If the infrastructure YAML format gets beyond ~200 lines, pause — may need to split into sections or reconsider granularity
-- If modeling a particular section (e.g., FX slots, bus dynamics) requires significant new Pydantic schema, pause — worth checking if that section should be a separate feature
-- If Init.snap is missing fields that Base.snap has (firmware schema gaps), pause — need to decide whether to patch Init or skip those fields
+- If switching from Base.snap to Init.snap breaks more than 5 existing tests, pause — the remaining value-level schema differences (send modes, main.1.on, ptap) may need a targeted patch strategy
+- If the infrastructure YAML exceeds ~200 lines, pause — may need to split into sections or reconsider granularity
+- If modeling a section requires significant new Pydantic schema beyond simple key→value, pause — worth checking if that section should be a separate feature
+- If any Init.snap field needed by existing renderer code is absent or behaves differently than Base.snap, pause
 
 ## Decisions
 
