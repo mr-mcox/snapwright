@@ -61,7 +61,7 @@ def render(assembly: Path, output: Path | None):
     "-o",
     type=click.Path(path_type=Path),
     default=None,
-    help="Output markdown report path. Defaults to evolution-report.md in current directory.",
+    help="Output markdown report path. Defaults to evolution-report.md.",
 )
 @click.option(
     "--min-occurrences",

@@ -220,8 +220,107 @@ def _gate_label(key: str, model: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Per-section translators
+# ---------------------------------------------------------------------------
+
+
+def _translate_flt(
+    key: str, old_fmt: str, new_fmt: str, delta: float | None
+) -> ParamLabel:
+    label_map = {
+        "lc": "HPF on",
+        "lcf": "HPF freq",
+        "lcs": "HPF slope",
+        "hc": "LPF on",
+        "hcf": "LPF freq",
+        "hcs": "LPF slope",
+        "tf": "tilt on",
+        "tilt": "tilt gain",
+        "mdl": "tilt model",
+    }
+    return ParamLabel("Filter", label_map.get(key, key), old_fmt, new_fmt, delta)
+
+
+def _translate_eq(
+    key: str, old_fmt: str, new_fmt: str, delta: float | None, eq_model: str
+) -> ParamLabel:
+    if key == "mdl":
+        return ParamLabel("EQ", "model", old_fmt, new_fmt, None)
+    if key in ("on", "mix"):
+        return ParamLabel("EQ", key, old_fmt, new_fmt, delta)
+    section = f"EQ ({eq_model})"
+    label = _eq_label(key, eq_model)
+    return ParamLabel(section, label, old_fmt, new_fmt, delta)
+
+
+def _translate_dyn(
+    key: str, old_fmt: str, new_fmt: str, delta: float | None, dyn_model: str
+) -> ParamLabel:
+    if key == "mdl":
+        return ParamLabel("Dynamics", "model", old_fmt, new_fmt, None)
+    label = _dyn_label(key, dyn_model)
+    section = "Dynamics" if key in ("on", "mix") else f"Dynamics ({dyn_model})"
+    return ParamLabel(section, label, old_fmt, new_fmt, delta)
+
+
+def _translate_gate(
+    key: str, old_fmt: str, new_fmt: str, delta: float | None, gate_model: str
+) -> ParamLabel:
+    if key == "mdl":
+        return ParamLabel("Gate", "model", old_fmt, new_fmt, None)
+    label = _gate_label(key, gate_model)
+    section = "Gate" if key == "on" else f"Gate ({gate_model})"
+    return ParamLabel(section, label, old_fmt, new_fmt, delta)
+
+
+def _translate_send(
+    path: str, old: Any, new: Any, old_fmt: str, new_fmt: str, delta: float | None
+) -> ParamLabel:
+    parts = path.split(".")
+    bus_num = parts[1] if len(parts) > 1 else "?"
+    param = parts[2] if len(parts) > 2 else "?"
+    bus_name = BUS_NAMES.get(bus_num, f"bus {bus_num}")
+    param_labels = {"on": "on", "lvl": "level", "mode": "mode", "pan": "pan"}
+    label = param_labels.get(param, param)
+
+    # Suppress delta when crossing the -144 off sentinel — the swing is noise
+    send_delta = delta
+    if param == "lvl" and delta is not None:
+        try:
+            if abs(float(old) - _SEND_OFF) < 0.1 or abs(float(new) - _SEND_OFF) < 0.1:
+                send_delta = None
+        except (TypeError, ValueError):
+            pass
+
+    return ParamLabel(f"Send → {bus_name}", label, old_fmt, new_fmt, send_delta)
+
+
+def _translate_input(
+    path: str, old_fmt: str, new_fmt: str, delta: float | None
+) -> ParamLabel:
+    key = path.split(".")[-1]
+    label_map = {
+        "grp": "source group",
+        "in": "input number",
+        "trim": "trim",
+        "inv": "phase invert",
+    }
+    return ParamLabel("Input", label_map.get(key, key), old_fmt, new_fmt, delta)
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
+
+def _compute_delta(old: Any, new: Any) -> float | None:
+    """Signed numeric delta, or None for booleans and non-numeric values."""
+    if isinstance(old, bool) or isinstance(new, bool):
+        return None
+    try:
+        return float(new) - float(old)
+    except (TypeError, ValueError):
+        return None
 
 
 def translate(path: str, old: Any, new: Any, context: dict) -> ParamLabel:
@@ -238,103 +337,23 @@ def translate(path: str, old: Any, new: Any, context: dict) -> ParamLabel:
 
     old_fmt = _fmt(old, path)
     new_fmt = _fmt(new, path)
+    delta = _compute_delta(old, new)
 
-    if isinstance(old, bool) or isinstance(new, bool):
-        delta: float | None = None
-    else:
-        try:
-            delta = float(new) - float(old)
-        except (TypeError, ValueError):
-            delta = None
-
-    # --- Fader ---
     if path == "fdr":
         return ParamLabel("Fader", "level", old_fmt, new_fmt, delta)
-
-    # --- Mute ---
     if path == "mute":
         return ParamLabel("Mute", "mute", old_fmt, new_fmt, None)
-
-    # --- Filters ---
     if path.startswith("flt."):
-        key = path[4:]
-        label_map = {
-            "lc": "HPF on",
-            "lcf": "HPF freq",
-            "lcs": "HPF slope",
-            "hc": "LPF on",
-            "hcf": "LPF freq",
-            "hcs": "LPF slope",
-            "tf": "tilt on",
-            "tilt": "tilt gain",
-            "mdl": "tilt model",
-        }
-        return ParamLabel("Filter", label_map.get(key, key), old_fmt, new_fmt, delta)
-
-    # --- EQ ---
+        return _translate_flt(path[4:], old_fmt, new_fmt, delta)
     if path.startswith("eq."):
-        key = path[3:]
-        if key == "mdl":
-            return ParamLabel("EQ", "model", old_fmt, new_fmt, None)
-        if key in ("on", "mix"):
-            label = key
-            section = "EQ"
-        else:
-            label = _eq_label(key, eq_model)
-            section = f"EQ ({eq_model})"
-        return ParamLabel(section, label, old_fmt, new_fmt, delta)
-
-    # --- Dynamics ---
+        return _translate_eq(path[3:], old_fmt, new_fmt, delta, eq_model)
     if path.startswith("dyn."):
-        key = path[4:]
-        if key == "mdl":
-            return ParamLabel("Dynamics", "model", old_fmt, new_fmt, None)
-        label = _dyn_label(key, dyn_model)
-        section = "Dynamics" if key in ("on", "mix") else f"Dynamics ({dyn_model})"
-        return ParamLabel(section, label, old_fmt, new_fmt, delta)
-
-    # --- Gate ---
+        return _translate_dyn(path[4:], old_fmt, new_fmt, delta, dyn_model)
     if path.startswith("gate."):
-        key = path[5:]
-        if key == "mdl":
-            return ParamLabel("Gate", "model", old_fmt, new_fmt, None)
-        label = _gate_label(key, gate_model)
-        section = "Gate" if key == "on" else f"Gate ({gate_model})"
-        return ParamLabel(section, label, old_fmt, new_fmt, delta)
-
-    # --- Sends ---
+        return _translate_gate(path[5:], old_fmt, new_fmt, delta, gate_model)
     if path.startswith("send."):
-        parts = path.split(".")
-        bus_num = parts[1] if len(parts) > 1 else "?"
-        param = parts[2] if len(parts) > 2 else "?"
-        bus_name = BUS_NAMES.get(bus_num, f"bus {bus_num}")
-        param_labels = {"on": "on", "lvl": "level", "mode": "mode", "pan": "pan"}
-        label = param_labels.get(param, param)
-
-        # Suppress delta when crossing the -144 off sentinel — the swing is noise
-        send_delta = delta
-        if param == "lvl" and delta is not None:
-            try:
-                if (
-                    abs(float(old) - _SEND_OFF) < 0.1
-                    or abs(float(new) - _SEND_OFF) < 0.1
-                ):
-                    send_delta = None
-            except (TypeError, ValueError):
-                pass
-
-        return ParamLabel(f"Send → {bus_name}", label, old_fmt, new_fmt, send_delta)
-
-    # --- Input ---
+        return _translate_send(path, old, new, old_fmt, new_fmt, delta)
     if path.startswith("in."):
-        key = path.split(".")[-1]
-        label_map = {
-            "grp": "source group",
-            "in": "input number",
-            "trim": "trim",
-            "inv": "phase invert",
-        }
-        return ParamLabel("Input", label_map.get(key, key), old_fmt, new_fmt, delta)
+        return _translate_input(path, old_fmt, new_fmt, delta)
 
-    # --- Fallback ---
     return ParamLabel("Other", path, old_fmt, new_fmt, delta)
