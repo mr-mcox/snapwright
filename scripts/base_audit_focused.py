@@ -5,8 +5,6 @@ Targets meaningful human-configured fields rather than doing a raw leaf diff.
 """
 
 import json
-from typing import Any
-
 
 BASE = "/Users/mcox/dev/snapwright/data/reference/Base.snap"
 INIT = "/Users/mcox/Documents/Wing Backup/Init.snap"
@@ -103,8 +101,14 @@ for n in [str(i) for i in range(1, 41)]:
     b_hpf_on = b_flt.get("lcon", b_flt.get("hpon", False))
     i_hpf_on = i_flt.get("lcon", i_flt.get("hpon", False))
     if b_hpf_on != i_hpf_on or (b_hpf_on and abs(float(b_hpf) - float(i_hpf)) > 1.0):
-        ch_rows.append(("HPF", label, f"{'ON' if i_hpf_on else 'OFF'} @ {i_hpf:.0f}Hz",
-                         f"{'ON' if b_hpf_on else 'OFF'} @ {b_hpf:.0f}Hz"))
+        ch_rows.append(
+            (
+                "HPF",
+                label,
+                f"{'ON' if i_hpf_on else 'OFF'} @ {i_hpf:.0f}Hz",
+                f"{'ON' if b_hpf_on else 'OFF'} @ {b_hpf:.0f}Hz",
+            )
+        )
 
     # Gate on/off
     b_gate = b_ch.get("gate", {})
@@ -418,7 +422,10 @@ for group in sorted(io_b["in"].keys()):
     b_grp = io_b["in"].get(group, {})
     i_grp = io_i["in"].get(group, {})
 
-    all_inputs = sorted(set(list(b_grp.keys()) + list(i_grp.keys())), key=lambda x: int(x) if x.isdigit() else 99)
+    all_inputs = sorted(
+        set(list(b_grp.keys()) + list(i_grp.keys())),
+        key=lambda x: int(x) if x.isdigit() else 99,
+    )
     for inp in all_inputs:
         b_in = b_grp.get(inp, {})
         i_in = i_grp.get(inp, {})
@@ -472,7 +479,10 @@ for group in sorted(io_b["out"].keys()):
     b_grp = io_b["out"].get(group, {})
     i_grp = io_i["out"].get(group, {})
 
-    all_outputs = sorted(set(list(b_grp.keys()) + list(i_grp.keys())), key=lambda x: int(x) if x.isdigit() else 99)
+    all_outputs = sorted(
+        set(list(b_grp.keys()) + list(i_grp.keys())),
+        key=lambda x: int(x) if x.isdigit() else 99,
+    )
     for out in all_outputs:
         b_out = b_grp.get(out, {})
         i_out = i_grp.get(out, {})
@@ -486,7 +496,9 @@ for group in sorted(io_b["out"].keys()):
         b_name = b_out.get("name", "")
         i_name = i_out.get("name", "")
         if b_name != i_name:
-            io_out_rows.append(("name", label, i_name or "(blank)", b_name or "(blank)"))
+            io_out_rows.append(
+                ("name", label, i_name or "(blank)", b_name or "(blank)")
+            )
 
         b_g = b_out.get("g", 0)
         i_g = i_out.get("g", 0)
@@ -506,6 +518,7 @@ print("\n" + "=" * 70)
 print("CONSOLE CFG (ae_data.cfg)")
 print("=" * 70)
 
+
 def flatten_cfg(obj, prefix=""):
     result = {}
     if isinstance(obj, dict):
@@ -518,6 +531,7 @@ def flatten_cfg(obj, prefix=""):
     else:
         result[prefix] = obj
     return result
+
 
 cfg_b = flatten_cfg(ae_b["cfg"])
 cfg_i = flatten_cfg(ae_i["cfg"])

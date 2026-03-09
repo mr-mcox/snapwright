@@ -17,27 +17,28 @@ Merge semantics (Kustomize-style):
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-
 
 # ---------------------------------------------------------------------------
 # Processing sub-schemas — all fields Optional; these are partial merge layers
 # ---------------------------------------------------------------------------
 
+
 class FiltersConfig(BaseModel):
     hpf_on: bool | None = None
     hpf_freq: float | None = None
-    hpf_slope: str | None = None   # Wing lcs: "12" | "18" | "24" dB/oct
+    hpf_slope: str | None = None  # Wing lcs: "12" | "18" | "24" dB/oct
     lpf_on: bool | None = None
     lpf_freq: float | None = None
     tilt_on: bool | None = None
-    tilt: float | None = None      # tilt amount in dB (positive = high boost)
+    tilt: float | None = None  # tilt amount in dB (positive = high boost)
 
 
 class EqBand(BaseModel):
     """One parametric EQ band (STD model only)."""
+
     freq: float
     gain: float = 0.0
     q: float = 1.0
@@ -55,17 +56,19 @@ class EqConfig(BaseModel):
     Other models (SOUL, PULSAR, E88, …): write Wing param names as extra fields
     and they pass through directly to Wing JSON.
     """
+
     model_config = ConfigDict(extra="allow")
 
     on: bool | None = None
     model: str | None = None
     low_shelf: EqShelf | None = None
-    bands: list[EqBand] | None = None   # STD only — replaced as a unit in merges
+    bands: list[EqBand] | None = None  # STD only — replaced as a unit in merges
     high_shelf: EqShelf | None = None
 
 
 class LevelerConfig(BaseModel):
     """ECL33 leveler sub-section."""
+
     on: bool | None = None
     threshold: float | None = None
     recovery: int | None = None
@@ -74,6 +77,7 @@ class LevelerConfig(BaseModel):
 
 class CompressorConfig(BaseModel):
     """ECL33 compressor sub-section."""
+
     on: bool | None = None
     threshold: float | None = None
     ratio: float | None = None
@@ -88,11 +92,12 @@ class DynamicsConfig(BaseModel):
     Other models (LA, NSTR, COMP, 9000C, …): write Wing param names as extra
     fields and they pass through directly to Wing JSON.
     """
+
     model_config = ConfigDict(extra="allow")
 
     on: bool | None = None
     model: str | None = None
-    leveler: LevelerConfig | None = None      # ECL33
+    leveler: LevelerConfig | None = None  # ECL33
     compressor: CompressorConfig | None = None  # ECL33
 
 
@@ -102,10 +107,11 @@ class GateConfig(BaseModel):
     GATE model: use typed threshold / range / attack / hold / release / ratio.
     Other models (PSE, RIDE, 9000G, …): write Wing param names as extra fields.
     """
+
     model_config = ConfigDict(extra="allow")
 
     on: bool | None = None
-    model: str | None = None       # GATE | PSE | RIDE | 9000G | …
+    model: str | None = None  # GATE | PSE | RIDE | 9000G | …
     threshold: float | None = None
     range: float | None = None
     attack: float | None = None
@@ -125,12 +131,14 @@ class ProcessingConfig(BaseModel):
 # File-level schema (musician / overlay / template YAML files)
 # ---------------------------------------------------------------------------
 
+
 class InstrumentLayer(BaseModel):
     """Schema for musician, overlay, and template YAML files.
 
     `inherits` is consumed by the loader during merge-stack resolution and is
     not preserved in the resolved output.
     """
+
     inherits: list[str] | str | None = None
     name: str | None = None
     color: int | None = None
@@ -138,7 +146,7 @@ class InstrumentLayer(BaseModel):
     mute: bool | None = None
     fader: float | None = None
     trim: float | None = None
-    main_on: bool | None = None   # send to main L/R output directly
+    main_on: bool | None = None  # send to main L/R output directly
     sends: dict[str, float] = Field(default_factory=dict)  # logical bus name → dB level
     processing: ProcessingConfig | None = None
 
@@ -155,10 +163,12 @@ class InstrumentLayer(BaseModel):
 # Assembly-level schemas
 # ---------------------------------------------------------------------------
 
+
 class LevelOffsets(BaseModel):
     """Additive adjustments applied after the inheritance stack resolves.
     Values are in dB. Only level-type params (fader, gain) may be offset.
     """
+
     fader: float = 0.0
     gain: float = 0.0
 
@@ -177,6 +187,7 @@ class MusicianEntry(BaseModel):
       3. `overrides` processing block (masks the full stack)
       4. `offsets` applied additively to resolved level values
     """
+
     inherits: list[str] | str | None = None
 
     # Identity overrides (absolute — mask inherited values)
@@ -207,10 +218,12 @@ class MusicianEntry(BaseModel):
 class AssemblyDef(BaseModel):
     team_name: str
     musicians: dict[str, MusicianEntry]
-    channels: dict[int, str]             # channel number → musician name
-    inputs: dict[str, InputAssignment]   # musician name → stage input
-    buses: dict[int, str]                # bus number → logical name
-    monitors: dict[str, dict[str, float]]  # monitor name → {musician: additive-dB offset}
+    channels: dict[int, str]  # channel number → musician name
+    inputs: dict[str, InputAssignment]  # musician name → stage input
+    buses: dict[int, str]  # bus number → logical name
+    monitors: dict[
+        str, dict[str, float]
+    ]  # monitor name → {musician: additive-dB offset}
 
     @field_validator("inputs", mode="before")
     @classmethod

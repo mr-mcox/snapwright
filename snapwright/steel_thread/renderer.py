@@ -7,20 +7,48 @@ Throwaway: this gets replaced by the instrument-frame renderer in Phase 1.
 """
 
 import copy
-from snapwright.steel_thread.dsl import ChannelConfig, EqConfig, DynamicsConfig, GateConfig, FiltersConfig
+
+from snapwright.steel_thread.dsl import (
+    ChannelConfig,
+    DynamicsConfig,
+    EqConfig,
+    FiltersConfig,
+    GateConfig,
+)
 from snapwright.wing.defaults import channel_defaults
 
 # --- Send defaults ---
 # Buses 1-12: POST (mix/FX buses)
 # Buses 13-16: PRE (monitor buses) — Base.snap has POST here but all team snapshots use PRE
 # MX sends: PRE + plink=True — Base.snap has POST/False, firmware difference
-_BUS_SEND_OFF = {"on": False, "lvl": -144.0, "pon": False, "mode": "POST", "plink": False, "pan": 0}
-_MON_SEND_OFF = {"on": False, "lvl": -144.0, "pon": False, "mode": "PRE",  "plink": False, "pan": 0}
-_MX_SEND_OFF  = {"on": False, "lvl": -144.0, "pon": False, "mode": "PRE",  "plink": True,  "pan": 0}
+_BUS_SEND_OFF = {
+    "on": False,
+    "lvl": -144.0,
+    "pon": False,
+    "mode": "POST",
+    "plink": False,
+    "pan": 0,
+}
+_MON_SEND_OFF = {
+    "on": False,
+    "lvl": -144.0,
+    "pon": False,
+    "mode": "PRE",
+    "plink": False,
+    "pan": 0,
+}
+_MX_SEND_OFF = {
+    "on": False,
+    "lvl": -144.0,
+    "pon": False,
+    "mode": "PRE",
+    "plink": True,
+    "pan": 0,
+}
 
-_MIX_SEND_KEYS = [str(i) for i in range(1, 13)]   # buses 1-12
-_MON_SEND_KEYS = [str(i) for i in range(13, 17)]   # buses 13-16 (monitors)
-_MX_SEND_KEYS  = [f"MX{i}" for i in range(1, 9)]
+_MIX_SEND_KEYS = [str(i) for i in range(1, 13)]  # buses 1-12
+_MON_SEND_KEYS = [str(i) for i in range(13, 17)]  # buses 13-16 (monitors)
+_MX_SEND_KEYS = [f"MX{i}" for i in range(1, 9)]
 _ALL_SEND_KEYS = _MIX_SEND_KEYS + _MON_SEND_KEYS + _MX_SEND_KEYS
 
 
@@ -35,7 +63,9 @@ def _off_template(key: str) -> dict:
 # --- Firmware-default patches ---
 # Fields absent from Base.snap (older firmware) but present in all team snapshots.
 _FLT_SLOPE_DEFAULTS = {"lcs": "24", "hcs": "12"}
-_IN_SET_DELAY_DEFAULT = 0.100000001   # 0.1ms — identical across all 40 channels in every snapshot
+_IN_SET_DELAY_DEFAULT = (
+    0.100000001  # 0.1ms — identical across all 40 channels in every snapshot
+)
 
 
 # --- EQ band Wing keys (in order) ---
@@ -133,31 +163,31 @@ def _apply_eq(ch: dict, eq: EqConfig) -> None:
 def _apply_dynamics(ch: dict, dyn: DynamicsConfig) -> None:
     if dyn.model == "ECL33":
         ch["dyn"] = {
-            "on":    dyn.on,
-            "mdl":   "ECL33",
-            "mix":   100,
-            "gain":  0,
-            "lon":   dyn.leveler.on,
-            "lthr":  dyn.leveler.threshold,
-            "lrec":  str(dyn.leveler.recovery),
+            "on": dyn.on,
+            "mdl": "ECL33",
+            "mix": 100,
+            "gain": 0,
+            "lon": dyn.leveler.on,
+            "lthr": dyn.leveler.threshold,
+            "lrec": str(dyn.leveler.recovery),
             "lfast": dyn.leveler.fast,
-            "con":   dyn.compressor.on,
-            "cthr":  dyn.compressor.threshold,
+            "con": dyn.compressor.on,
+            "cthr": dyn.compressor.threshold,
             "ratio": dyn.compressor.ratio,
-            "crec":  str(dyn.compressor.recovery),
+            "crec": str(dyn.compressor.recovery),
             "cfast": dyn.compressor.fast,
             "cgain": 0,
         }
     else:
         # Standard COMP model (Base.snap default shape)
-        ch["dyn"]["on"]    = dyn.on
-        ch["dyn"]["mdl"]   = dyn.model
+        ch["dyn"]["on"] = dyn.on
+        ch["dyn"]["mdl"] = dyn.model
 
 
 def _apply_gate(ch: dict, gate: GateConfig) -> None:
-    ch["gate"]["on"]    = gate.on
-    ch["gate"]["thr"]   = gate.threshold
+    ch["gate"]["on"] = gate.on
+    ch["gate"]["thr"] = gate.threshold
     ch["gate"]["range"] = gate.range
-    ch["gate"]["att"]   = gate.attack
-    ch["gate"]["hld"]   = gate.hold
-    ch["gate"]["rel"]   = gate.release
+    ch["gate"]["att"] = gate.attack
+    ch["gate"]["hld"] = gate.hold
+    ch["gate"]["rel"] = gate.release

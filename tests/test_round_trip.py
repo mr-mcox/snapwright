@@ -9,11 +9,12 @@ The full diff is printed to stdout so we can review it and agree tolerances.
 """
 
 from pathlib import Path
+
 from deepdiff import DeepDiff
 
-from snapwright.wing.parser import load_snap, get_channel
 from snapwright.steel_thread.dsl import load_channel_config
 from snapwright.steel_thread.renderer import render_channel
+from snapwright.wing.parser import get_channel, load_snap
 
 JAMES = Path("data/reference/sunday-starters/James.snap")
 KICK_DSL = Path("data/dsl/channels/kick.yaml")
@@ -75,9 +76,9 @@ def test_print_full_diff():
     target = _james_ch1()
     diff = DeepDiff(rendered, target, ignore_numeric_type_changes=True)
     if diff:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("DIFF: rendered ch1 vs James.snap ch1")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         for change_type, changes in diff.items():
             print(f"\n--- {change_type} ({len(changes)} items) ---")
             if isinstance(changes, dict):

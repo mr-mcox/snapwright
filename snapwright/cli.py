@@ -19,7 +19,8 @@ def main():
 @main.command()
 @click.argument("assembly", type=click.Path(exists=True, path_type=Path))
 @click.option(
-    "--output", "-o",
+    "--output",
+    "-o",
     type=click.Path(path_type=Path),
     default=None,
     help="Output .snap path. Defaults to <assembly_dir>/<team_name>.snap",
@@ -31,6 +32,7 @@ def render(assembly: Path, output: Path | None):
     """
     try:
         from snapwright.dsl.loader import load_assembly
+
         asm_def, _ = load_assembly(assembly)
         team_slug = asm_def.team_name.lower().replace(" ", "-")
 
@@ -38,28 +40,32 @@ def render(assembly: Path, output: Path | None):
             output = assembly.parent / f"{team_slug}.snap"
 
         snap = render_assembly(assembly, output)
-        n_channels = sum(
-            1 for ch in snap["ae_data"]["ch"].values()
-            if ch.get("name")
-        )
+        n_channels = sum(1 for ch in snap["ae_data"]["ch"].values() if ch.get("name"))
         click.echo(f"✓ Rendered {asm_def.team_name} → {output}")
-        click.echo(f"  {len(asm_def.channels)} DSL channels, {n_channels} named channels total")
+        click.echo(
+            f"  {len(asm_def.channels)} DSL channels, {n_channels} named channels total"
+        )
 
     except Exception as exc:
         click.echo(f"✗ Error: {exc}", err=True)
         sys.exit(1)
 
+
 @main.command("analyze-evolution")
 @click.argument("baseline", type=click.Path(exists=True, path_type=Path))
-@click.argument("snapshots", nargs=-1, type=click.Path(exists=True, path_type=Path), required=True)
+@click.argument(
+    "snapshots", nargs=-1, type=click.Path(exists=True, path_type=Path), required=True
+)
 @click.option(
-    "--output", "-o",
+    "--output",
+    "-o",
     type=click.Path(path_type=Path),
     default=None,
     help="Output markdown report path. Defaults to evolution-report.md in current directory.",
 )
 @click.option(
-    "--min-occurrences", "-n",
+    "--min-occurrences",
+    "-n",
     type=int,
     default=3,
     show_default=True,
@@ -108,5 +114,7 @@ def analyze_evolution(
 
     except Exception as exc:
         click.echo(f"✗ Error: {exc}", err=True)
-        import traceback; traceback.print_exc()
+        import traceback
+
+        traceback.print_exc()
         sys.exit(1)

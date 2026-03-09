@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from snapwright.evolution.significance import is_significant, _SEND_OFF
+from snapwright.evolution.significance import _SEND_OFF
 
 # ---------------------------------------------------------------------------
 # Bus name map — only named buses are tracked; unnamed are vestigial
@@ -36,13 +36,16 @@ BUS_NAMES: dict[str, str] = {
 # Output type
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ParamLabel:
-    section: str        # e.g. "EQ (STD)", "Dynamics (ECL33)", "Filter", "Send → Vocals sub"
-    label: str          # e.g. "band 1 gain", "comp threshold", "HPF freq"
-    old_fmt: str        # formatted old value, e.g. "+3.2 dB", "199 Hz", "STD"
-    new_fmt: str        # formatted new value
-    delta: float | None # signed numeric delta; None for non-numeric or sentinel transitions
+    section: str  # e.g. "EQ (STD)", "Dynamics (ECL33)", "Filter", "Send → Vocals sub"
+    label: str  # e.g. "band 1 gain", "comp threshold", "HPF freq"
+    old_fmt: str  # formatted old value, e.g. "+3.2 dB", "199 Hz", "STD"
+    new_fmt: str  # formatted new value
+    delta: (
+        float | None
+    )  # signed numeric delta; None for non-numeric or sentinel transitions
 
 
 # ---------------------------------------------------------------------------
@@ -51,19 +54,37 @@ class ParamLabel:
 
 _DB_PATHS = {
     "fdr",
-    "eq.lg", "eq.hg",
-    "eq.1g", "eq.2g", "eq.3g", "eq.4g",
-    "eq.lmg", "eq.hmg",
-    "dyn.gain", "dyn.thr", "dyn.cthr", "dyn.lthr", "dyn.cgain",
-    "gate.thr", "gate.range",
+    "eq.lg",
+    "eq.hg",
+    "eq.1g",
+    "eq.2g",
+    "eq.3g",
+    "eq.4g",
+    "eq.lmg",
+    "eq.hmg",
+    "dyn.gain",
+    "dyn.thr",
+    "dyn.cthr",
+    "dyn.lthr",
+    "dyn.cgain",
+    "gate.thr",
+    "gate.range",
     "in.set.trim",
 }
 
 _FREQ_PATHS = {
-    "flt.lcf", "flt.hcf",
-    "eq.lf", "eq.hf",
-    "eq.1f", "eq.2f", "eq.3f", "eq.4f",
-    "eq.lmf", "eq.hmf", "eq.lmf3", "eq.hmf3",
+    "flt.lcf",
+    "flt.hcf",
+    "eq.lf",
+    "eq.hf",
+    "eq.1f",
+    "eq.2f",
+    "eq.3f",
+    "eq.4f",
+    "eq.lmf",
+    "eq.hmf",
+    "eq.lmf3",
+    "eq.hmf3",
 }
 
 
@@ -96,17 +117,28 @@ def _fmt(value: Any, path: str) -> str:
 # ---------------------------------------------------------------------------
 
 _STD_BAND_LABELS = {
-    "l": "low shelf", "1": "band 1", "2": "band 2",
-    "3": "band 3", "4": "band 4", "h": "high shelf",
+    "l": "low shelf",
+    "1": "band 1",
+    "2": "band 2",
+    "3": "band 3",
+    "4": "band 4",
+    "h": "high shelf",
 }
 
 _4BAND_LABELS = {
-    "l": "low shelf", "lm": "lo-mid", "hm": "hi-mid", "h": "high shelf",
+    "l": "low shelf",
+    "lm": "lo-mid",
+    "hm": "hi-mid",
+    "h": "high shelf",
 }
 
 _EQ_SUFFIX_LABELS = {
-    "g": "gain", "f": "freq", "q": "Q",
-    "t": "type", "eq": "shelf type", "f3": "freq (octave)",
+    "g": "gain",
+    "f": "freq",
+    "q": "Q",
+    "t": "type",
+    "eq": "shelf type",
+    "f3": "freq (octave)",
 }
 
 
@@ -124,34 +156,55 @@ def _eq_label(key: str, model: str) -> str:
 # ---------------------------------------------------------------------------
 
 _DYN_COMMON = {
-    "on": "on", "mix": "mix", "gain": "output gain",
-    "thr": "threshold", "ratio": "ratio",
-    "att": "attack", "rel": "release", "hld": "hold",
-    "knee": "knee", "det": "detection", "env": "envelope",
-    "auto": "auto release", "fast": "fast mode",
-    "peak": "peak mode", "mode": "mode",
+    "on": "on",
+    "mix": "mix",
+    "gain": "output gain",
+    "thr": "threshold",
+    "ratio": "ratio",
+    "att": "attack",
+    "rel": "release",
+    "hld": "hold",
+    "knee": "knee",
+    "det": "detection",
+    "env": "envelope",
+    "auto": "auto release",
+    "fast": "fast mode",
+    "peak": "peak mode",
+    "mode": "mode",
 }
 
 _DYN_MODEL_LABELS: dict[str, dict[str, str]] = {
     "ECL33": {
-        "lon": "leveler on", "lthr": "leveler threshold",
-        "lrec": "leveler recovery", "lfast": "leveler fast",
-        "con": "comp on", "cthr": "comp threshold",
-        "crec": "comp recovery", "cfast": "comp fast", "cgain": "comp gain",
+        "lon": "leveler on",
+        "lthr": "leveler threshold",
+        "lrec": "leveler recovery",
+        "lfast": "leveler fast",
+        "con": "comp on",
+        "cthr": "comp threshold",
+        "crec": "comp recovery",
+        "cfast": "comp fast",
+        "cgain": "comp gain",
     },
     "LA": {"ingain": "gain", "peak": "peak reduction"},
     "NSTR": {"in": "input gain", "out": "output gain"},
 }
 
 _GATE_COMMON = {
-    "on": "on", "thr": "threshold", "range": "range",
-    "att": "attack", "hld": "hold", "rel": "release",
-    "acc": "accuracy", "ratio": "ratio",
-    "fast": "fast mode", "mode": "mode", "peak": "peak mode",
+    "on": "on",
+    "thr": "threshold",
+    "range": "range",
+    "att": "attack",
+    "hld": "hold",
+    "rel": "release",
+    "acc": "accuracy",
+    "ratio": "ratio",
+    "fast": "fast mode",
+    "mode": "mode",
+    "peak": "peak mode",
 }
 
 _GATE_MODEL_LABELS: dict[str, dict[str, str]] = {
-    "PSE":  {"depth": "depth"},
+    "PSE": {"depth": "depth"},
     "RIDE": {"tgt": "target", "spd": "speed"},
 }
 
@@ -170,6 +223,7 @@ def _gate_label(key: str, model: str) -> str:
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def translate(path: str, old: Any, new: Any, context: dict) -> ParamLabel:
     """Translate a Wing param path and values into a ParamLabel.
 
@@ -178,8 +232,8 @@ def translate(path: str, old: Any, new: Any, context: dict) -> ParamLabel:
         dyn_model  — e.g. "COMP", "ECL33", "LA"
         gate_model — e.g. "GATE", "PSE", "RIDE"
     """
-    eq_model   = context.get("eq_model", "STD")
-    dyn_model  = context.get("dyn_model", "COMP")
+    eq_model = context.get("eq_model", "STD")
+    dyn_model = context.get("dyn_model", "COMP")
     gate_model = context.get("gate_model", "GATE")
 
     old_fmt = _fmt(old, path)
@@ -205,9 +259,15 @@ def translate(path: str, old: Any, new: Any, context: dict) -> ParamLabel:
     if path.startswith("flt."):
         key = path[4:]
         label_map = {
-            "lc": "HPF on", "lcf": "HPF freq", "lcs": "HPF slope",
-            "hc": "LPF on", "hcf": "LPF freq", "hcs": "LPF slope",
-            "tf": "tilt on", "tilt": "tilt gain", "mdl": "tilt model",
+            "lc": "HPF on",
+            "lcf": "HPF freq",
+            "lcs": "HPF slope",
+            "hc": "LPF on",
+            "hcf": "LPF freq",
+            "hcs": "LPF slope",
+            "tf": "tilt on",
+            "tilt": "tilt gain",
+            "mdl": "tilt model",
         }
         return ParamLabel("Filter", label_map.get(key, key), old_fmt, new_fmt, delta)
 
@@ -246,7 +306,7 @@ def translate(path: str, old: Any, new: Any, context: dict) -> ParamLabel:
     if path.startswith("send."):
         parts = path.split(".")
         bus_num = parts[1] if len(parts) > 1 else "?"
-        param   = parts[2] if len(parts) > 2 else "?"
+        param = parts[2] if len(parts) > 2 else "?"
         bus_name = BUS_NAMES.get(bus_num, f"bus {bus_num}")
         param_labels = {"on": "on", "lvl": "level", "mode": "mode", "pan": "pan"}
         label = param_labels.get(param, param)
@@ -255,7 +315,10 @@ def translate(path: str, old: Any, new: Any, context: dict) -> ParamLabel:
         send_delta = delta
         if param == "lvl" and delta is not None:
             try:
-                if abs(float(old) - _SEND_OFF) < 0.1 or abs(float(new) - _SEND_OFF) < 0.1:
+                if (
+                    abs(float(old) - _SEND_OFF) < 0.1
+                    or abs(float(new) - _SEND_OFF) < 0.1
+                ):
                     send_delta = None
             except (TypeError, ValueError):
                 pass
@@ -266,8 +329,10 @@ def translate(path: str, old: Any, new: Any, context: dict) -> ParamLabel:
     if path.startswith("in."):
         key = path.split(".")[-1]
         label_map = {
-            "grp": "source group", "in": "input number",
-            "trim": "trim", "inv": "phase invert",
+            "grp": "source group",
+            "in": "input number",
+            "trim": "trim",
+            "inv": "phase invert",
         }
         return ParamLabel("Input", label_map.get(key, key), old_fmt, new_fmt, delta)
 

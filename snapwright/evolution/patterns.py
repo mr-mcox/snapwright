@@ -9,7 +9,7 @@ from __future__ import annotations
 import statistics
 from dataclasses import dataclass, field
 
-from snapwright.evolution.diff import SnapshotDiff, ParamChange
+from snapwright.evolution.diff import ParamChange, SnapshotDiff
 
 
 @dataclass
@@ -58,7 +58,7 @@ class Pattern:
     def recent_count(self) -> int:
         """Occurrences in the second half of the batch — recency signal."""
         n = len(self.occurrences)
-        return len(self.occurrences[n // 2:])
+        return len(self.occurrences[n // 2 :])
 
 
 def find_patterns(diffs: list[SnapshotDiff], min_occurrences: int = 3) -> list[Pattern]:
@@ -92,17 +92,22 @@ def find_patterns(diffs: list[SnapshotDiff], min_occurrences: int = 3) -> list[P
         ]
 
         last_label = entries[-1][1].label
-        patterns.append(Pattern(
-            channel=ch_name,
-            channel_num=ch_num,
-            path=path,
-            section=last_label.section,
-            label=last_label.label,
-            occurrences=occurrences,
-        ))
+        patterns.append(
+            Pattern(
+                channel=ch_name,
+                channel_num=ch_num,
+                path=path,
+                section=last_label.section,
+                label=last_label.label,
+                occurrences=occurrences,
+            )
+        )
 
-    return sorted(patterns, key=lambda p: (
-        -int(p.consistent_direction),
-        -p.recent_count,
-        -p.count,
-    ))
+    return sorted(
+        patterns,
+        key=lambda p: (
+            -int(p.consistent_direction),
+            -p.recent_count,
+            -p.count,
+        ),
+    )

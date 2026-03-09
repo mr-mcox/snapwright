@@ -15,6 +15,7 @@ snapwright = "snapwright.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+strict = true
 
 [build-system]
 requires = ["setuptools>=75.0"]
@@ -23,7 +24,26 @@ build-backend = "setuptools.build_meta"
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
+    "ruff>=0.9.0",
 ]
 
 [tool.setuptools.packages.find]
 include = ["snapwright*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = ["scripts", "snapwright/steel_thread"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "C90",    # mccabe complexity
+    "UP",     # pyupgrade
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
