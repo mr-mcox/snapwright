@@ -2,8 +2,7 @@
   "skills": [".pi/skills"],
   "packages": [
     {
-      "source": "~/dev/pi-platform",
-      "skills": [".pi/skills/", ".pi/skills/"]
+      "source": "~/dev/pi-platform"
     }
   ],
   "compaction": {
