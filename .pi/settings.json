@@ -1,11 +1,12 @@
 {
-  "skills": [
-    ".pi/skills"
-  ],
+  "skills": [".pi/skills"],
   "packages": [
     {
       "source": "~/dev/pi-platform",
-      "skills": [".pi/skills/agent-brief"]
+      "skills": [
+        ".pi/skills/agent-brief",
+        ".pi/skills/coding-workflow"
+      ]
     }
   ],
   "compaction": {

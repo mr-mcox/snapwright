@@ -5,8 +5,7 @@ is this change worth surfacing? Tests encode the policy explicitly so it can be
 read as documentation and changed with confidence.
 """
 
-import pytest
-from snapwright.evolution.significance import is_significant, THRESHOLDS
+from snapwright.evolution.significance import is_significant
 
 
 class TestFaderSignificance:
@@ -38,7 +37,7 @@ class TestSendLevelSignificance:
 
 class TestEqGainSignificance:
     def test_at_threshold(self):
-        assert is_significant("eq.1g", 3.2, 1.7) is True   # delta = 1.5
+        assert is_significant("eq.1g", 3.2, 1.7) is True  # delta = 1.5
 
     def test_below_threshold(self):
         assert is_significant("eq.1g", 3.2, 2.0) is False  # delta = 1.2
@@ -61,7 +60,7 @@ class TestFrequencySignificance:
         assert is_significant("flt.lcf", 100.0, 110.0) is True
 
     def test_eq_frequency(self):
-        assert is_significant("eq.1f", 500.0, 400.0) is True   # 20% shift
+        assert is_significant("eq.1f", 500.0, 400.0) is True  # 20% shift
         assert is_significant("eq.1f", 500.0, 495.0) is False  # 1% shift
 
 
@@ -94,7 +93,7 @@ class TestDynamicsSignificance:
         assert is_significant("dyn.cthr", -17.0, -24.0) is True
 
     def test_ratio_at_0_5(self):
-        assert is_significant("dyn.ratio", 3.0, 4.0) is True   # delta = 1.0
+        assert is_significant("dyn.ratio", 3.0, 4.0) is True  # delta = 1.0
         assert is_significant("dyn.ratio", 3.0, 3.3) is False  # delta = 0.3
 
 

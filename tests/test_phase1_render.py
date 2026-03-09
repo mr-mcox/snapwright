@@ -12,7 +12,7 @@ import pytest
 from deepdiff import DeepDiff
 
 from snapwright.dsl.renderer import render_assembly
-from snapwright.wing.parser import load_snap, get_channel
+from snapwright.wing.parser import load_snap
 
 ASSEMBLY = Path("data/dsl/teams/james/assembly.yaml")
 REFERENCE = Path("data/reference/sunday-starters/James.snap")
@@ -46,6 +46,7 @@ def reference():
 # Smoke test — just check it renders without error
 # ---------------------------------------------------------------------------
 
+
 def test_render_completes(rendered):
     assert "ae_data" in rendered
     assert "ch" in rendered["ae_data"]
@@ -56,19 +57,23 @@ def test_render_completes(rendered):
 # Identity checks
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("ch_num,expected_name", [
-    (1,  "Kick"),
-    (2,  "Snare"),
-    (3,  "Tom"),
-    (5,  "Bass"),
-    (13, "James"),
-    (25, "James"),
-    (26, "Pricilla"),
-    (27, "Anna"),
-    (28, "Yolaine"),
-    (37, "Handheld"),
-    (38, "Headset"),
-])
+
+@pytest.mark.parametrize(
+    "ch_num,expected_name",
+    [
+        (1, "Kick"),
+        (2, "Snare"),
+        (3, "Tom"),
+        (5, "Bass"),
+        (13, "James"),
+        (25, "James"),
+        (26, "Pricilla"),
+        (27, "Anna"),
+        (28, "Yolaine"),
+        (37, "Handheld"),
+        (38, "Headset"),
+    ],
+)
 def test_channel_name(rendered, ch_num, expected_name):
     ch = rendered["ae_data"]["ch"][str(ch_num)]
     assert ch["name"] == expected_name
@@ -85,33 +90,41 @@ def test_fader_within_tolerance(rendered, reference, ch_num):
 # Input routing
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("ch_num,expected_grp,expected_in", [
-    (1,  "A", 2),
-    (2,  "A", 3),
-    (13, "A", 14),
-    (25, "A", 10),
-    (26, "A", 11),
-    (37, "A", 32),
-])
+
+@pytest.mark.parametrize(
+    "ch_num,expected_grp,expected_in",
+    [
+        (1, "A", 2),
+        (2, "A", 3),
+        (13, "A", 14),
+        (25, "A", 10),
+        (26, "A", 11),
+        (37, "A", 32),
+    ],
+)
 def test_input_routing(rendered, reference, ch_num, expected_grp, expected_in):
     conn = rendered["ae_data"]["ch"][str(ch_num)]["in"]["conn"]
     assert conn["grp"] == expected_grp, f"ch{ch_num} grp"
-    assert conn["in"]  == expected_in,  f"ch{ch_num} in"
+    assert conn["in"] == expected_in, f"ch{ch_num} in"
 
 
 # ---------------------------------------------------------------------------
 # EQ model checks
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("ch_num,expected_model", [
-    (1,  "STD"),
-    (2,  "STD"),
-    (6,  "E88"),
-    (13, "PULSAR"),
-    (14, "SOUL"),
-    (25, "SOUL"),
-    (26, "SOUL"),
-])
+
+@pytest.mark.parametrize(
+    "ch_num,expected_model",
+    [
+        (1, "STD"),
+        (2, "STD"),
+        (6, "E88"),
+        (13, "PULSAR"),
+        (14, "SOUL"),
+        (25, "SOUL"),
+        (26, "SOUL"),
+    ],
+)
 def test_eq_model(rendered, ch_num, expected_model):
     eq = rendered["ae_data"]["ch"][str(ch_num)]["eq"]
     assert eq["mdl"] == expected_model, f"ch{ch_num} EQ model"
@@ -121,14 +134,18 @@ def test_eq_model(rendered, ch_num, expected_model):
 # Dynamics model checks
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("ch_num,expected_model", [
-    (1,  "ECL33"),
-    (2,  "ECL33"),
-    (5,  "LA"),
-    (6,  "9000C"),
-    (13, "NSTR"),
-    (25, "LA"),
-])
+
+@pytest.mark.parametrize(
+    "ch_num,expected_model",
+    [
+        (1, "ECL33"),
+        (2, "ECL33"),
+        (5, "LA"),
+        (6, "9000C"),
+        (13, "NSTR"),
+        (25, "LA"),
+    ],
+)
 def test_dynamics_model(rendered, ch_num, expected_model):
     dyn = rendered["ae_data"]["ch"][str(ch_num)]["dyn"]
     assert dyn["mdl"] == expected_model, f"ch{ch_num} dynamics model"
@@ -138,15 +155,19 @@ def test_dynamics_model(rendered, ch_num, expected_model):
 # Gate model checks
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("ch_num,expected_model", [
-    (1,  "GATE"),
-    (2,  "GATE"),
-    (6,  "9000G"),
-    (14, "PSE"),
-    (25, "PSE"),
-    (37, "RIDE"),
-    (38, "RIDE"),
-])
+
+@pytest.mark.parametrize(
+    "ch_num,expected_model",
+    [
+        (1, "GATE"),
+        (2, "GATE"),
+        (6, "9000G"),
+        (14, "PSE"),
+        (25, "PSE"),
+        (37, "RIDE"),
+        (38, "RIDE"),
+    ],
+)
 def test_gate_model(rendered, ch_num, expected_model):
     gate = rendered["ae_data"]["ch"][str(ch_num)]["gate"]
     assert gate["mdl"] == expected_model, f"ch{ch_num} gate model"
@@ -155,6 +176,7 @@ def test_gate_model(rendered, ch_num, expected_model):
 # ---------------------------------------------------------------------------
 # Active send checks
 # ---------------------------------------------------------------------------
+
 
 def _send_on(snap, ch_num, bus_key):
     return snap["ae_data"]["ch"][str(ch_num)]["send"][bus_key]
@@ -192,14 +214,15 @@ def test_james_vox_monitor_1(rendered, reference):
 # Full diff printout (not a pass/fail — review to assess overall quality)
 # ---------------------------------------------------------------------------
 
+
 def test_print_full_diff_active_channels(rendered, reference):
     """Print a summary diff for all DSL-specified channels.
 
     Run with: uv run pytest tests/test_phase1_render.py::test_print_full_diff_active_channels -s
     """
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("DIFF: rendered James team vs James.snap (DSL channels only)")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
     total_params = 0
     total_diffs = 0
@@ -209,7 +232,11 @@ def test_print_full_diff_active_channels(rendered, reference):
         t = reference["ae_data"]["ch"][str(ch_num)]
         name = t.get("name", f"ch{ch_num}")
         diff = DeepDiff(r, t, ignore_numeric_type_changes=True, significant_digits=2)
-        n_params = sum(len(v) if isinstance(v, dict) else 1 for v in diff.values()) if diff else 0
+        n_params = (
+            sum(len(v) if isinstance(v, dict) else 1 for v in diff.values())
+            if diff
+            else 0
+        )
         total_params += 1
         total_diffs += n_params
         if diff:
@@ -231,7 +258,7 @@ def test_print_full_diff_active_channels(rendered, reference):
 # Priscilla team smoke tests
 # ---------------------------------------------------------------------------
 
-PRISCILLA_ASSEMBLY  = Path("data/dsl/teams/priscilla/assembly.yaml")
+PRISCILLA_ASSEMBLY = Path("data/dsl/teams/priscilla/assembly.yaml")
 PRISCILLA_REFERENCE = Path("data/reference/sunday-starters/pricilla team.snap")
 PRISCILLA_DSL_CHANNELS = [1, 2, 3, 4, 5, 13, 15, 16, 29, 37, 38]
 
@@ -253,9 +280,16 @@ def test_priscilla_render_completes(pris_rendered):
 
 def test_priscilla_channel_names(pris_rendered):
     names = {
-        1: "Kick", 2: "Snare", 3: "Tom", 4: "Overhead",
-        13: "Flute", 15: "Piano", 16: "Guitar", 29: "area mic",
-        37: "Handheld", 38: "Headset",
+        1: "Kick",
+        2: "Snare",
+        3: "Tom",
+        4: "Overhead",
+        13: "Flute",
+        15: "Piano",
+        16: "Guitar",
+        29: "area mic",
+        37: "Handheld",
+        38: "Headset",
     }
     for ch_num, expected in names.items():
         actual = pris_rendered["ae_data"]["ch"][str(ch_num)].get("name")
@@ -282,10 +316,24 @@ def test_priscilla_guitar_dynamics_model(pris_rendered):
 
 def test_priscilla_flute_eq_shared_with_james(pris_rendered, rendered):
     """Flute SOUL EQ is identical between teams (comes from shared musician file)."""
-    james_eq  = rendered["ae_data"]["ch"]["14"]["eq"]
-    pris_eq   = pris_rendered["ae_data"]["ch"]["13"]["eq"]
-    for key in ("mdl", "lf", "lg", "lmf", "lmq", "lmg", "hmf", "hmq", "hmg", "hf", "hg"):
-        assert james_eq[key] == pris_eq[key], f"flute EQ field '{key}' differs between teams"
+    james_eq = rendered["ae_data"]["ch"]["14"]["eq"]
+    pris_eq = pris_rendered["ae_data"]["ch"]["13"]["eq"]
+    for key in (
+        "mdl",
+        "lf",
+        "lg",
+        "lmf",
+        "lmq",
+        "lmg",
+        "hmf",
+        "hmq",
+        "hmg",
+        "hf",
+        "hg",
+    ):
+        assert james_eq[key] == pris_eq[key], (
+            f"flute EQ field '{key}' differs between teams"
+        )
 
 
 def test_priscilla_flute_dynamics_off(pris_rendered):
@@ -329,16 +377,20 @@ def test_priscilla_input_shorthand(pris_rendered, pris_reference):
 
 def test_priscilla_print_diff(pris_rendered, pris_reference):
     """Print diff for Priscilla channels. Run with -s to see output."""
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("DIFF: rendered Priscilla team vs pricilla team.snap")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     total = 0
     for ch_num in PRISCILLA_DSL_CHANNELS:
         r = pris_rendered["ae_data"]["ch"][str(ch_num)]
         t = pris_reference["ae_data"]["ch"][str(ch_num)]
         name = t.get("name", f"ch{ch_num}")
         diff = DeepDiff(r, t, ignore_numeric_type_changes=True, significant_digits=2)
-        n = sum(len(v) if isinstance(v, dict) else 1 for v in diff.values()) if diff else 0
+        n = (
+            sum(len(v) if isinstance(v, dict) else 1 for v in diff.values())
+            if diff
+            else 0
+        )
         total += n
         if diff:
             print(f"\n  ch{ch_num} ({name}): {n} difference(s)")

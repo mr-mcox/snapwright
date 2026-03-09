@@ -1,12 +1,9 @@
 """Tests for Wing .snap parser and writer."""
 
-import json
 import tempfile
 from pathlib import Path
 
-import pytest
-
-from snapwright.wing.parser import load_snap, get_channel
+from snapwright.wing.parser import get_channel, load_snap
 from snapwright.wing.writer import save_snap, set_channel
 
 JAMES = Path("data/reference/sunday-starters/James.snap")

@@ -4,8 +4,7 @@ Translation is pure: given a path, old value, new value, and model context,
 produce a human-readable label and formatted values. No Wing snapshot loading.
 """
 
-import pytest
-from snapwright.evolution.translate import translate, ParamLabel
+from snapwright.evolution.translate import translate
 
 
 def ctx(eq="STD", dyn="COMP", gate="GATE"):

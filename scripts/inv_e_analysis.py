@@ -1,8 +1,10 @@
 import json
 
+
 def load_snap(path):
     with open(path) as f:
         return json.load(f)
+
 
 base = load_snap("data/reference/Base.snap")
 init = load_snap("data/reference/Init.snap")
@@ -21,17 +23,17 @@ print("\n=== Does renderer.py touch bus names? ===")
 with open("snapwright/dsl/renderer.py") as f:
     content = f.read()
 found = False
-for i, line in enumerate(content.split('\n'), 1):
-    if 'bus' in line.lower() and 'name' in line.lower():
+for i, line in enumerate(content.split("\n"), 1):
+    if "bus" in line.lower() and "name" in line.lower():
         print(f"  line {i}: {line.rstrip()}")
         found = True
 if not found:
     print("  No bus name setting found in renderer")
 
 print("\n=== Does renderer touch DCA, mgrp, main, mtx? ===")
-for section in ['dca', 'mgrp', 'main', 'mtx', 'ce_data']:
+for section in ["dca", "mgrp", "main", "mtx", "ce_data"]:
     found_lines = []
-    for i, line in enumerate(content.split('\n'), 1):
+    for i, line in enumerate(content.split("\n"), 1):
         if section in line.lower():
             found_lines.append(f"  line {i}: {line.rstrip()}")
     if found_lines:

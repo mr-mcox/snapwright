@@ -18,7 +18,7 @@ THRESHOLDS = {
     "fader_db": 2.0,
     "send_level_db": 2.0,
     "eq_gain_db": 1.5,
-    "freq_relative": 0.10,   # 10% relative shift
+    "freq_relative": 0.10,  # 10% relative shift
     "dynamics_threshold_db": 2.0,
     "dynamics_ratio": 0.5,
     "gate_threshold_db": 2.0,
@@ -102,6 +102,7 @@ def is_significant(path: str, old: Any, new: Any) -> bool:
 # ---------------------------------------------------------------------------
 # Path classifiers
 # ---------------------------------------------------------------------------
+
 
 def _is_send_level(path: str) -> bool:
     parts = path.split(".")

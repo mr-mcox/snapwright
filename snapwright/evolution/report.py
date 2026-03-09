@@ -37,7 +37,11 @@ def _suggestion(p: Pattern) -> str:
 
     if d is not None:
         is_freq = "freq" in p.label
-        direction = ("raising" if d > 0 else "lowering") if is_freq else ("increasing" if d > 0 else "reducing")
+        direction = (
+            ("raising" if d > 0 else "lowering")
+            if is_freq
+            else ("increasing" if d > 0 else "reducing")
+        )
         return f"Consider {direction} **{full_label}** to {target_val} ({p.count}×, median {'+' if d > 0 else ''}{d:.1f})"
 
     return f"Consider updating **{full_label}** to {target_val} ({p.count}×)"
@@ -52,11 +56,14 @@ def render_report(
     lines: list[str] = []
 
     lines += [
-        "# Snapshot Evolution Analysis", "",
+        "# Snapshot Evolution Analysis",
+        "",
         f"**Baseline**: {base_name}",
         f"**Snapshots analysed**: {len(diffs)}",
         f"**Pattern threshold**: {min_occurrences}+",
-        "", "---", "",
+        "",
+        "---",
+        "",
     ]
 
     # Patterns section
@@ -75,21 +82,27 @@ def render_report(
             lines += [f"### {ch_name}{num_suffix}", ""]
 
             for p in ch_patterns:
-                direction = "✓ consistent" if p.consistent_direction else "~ mixed direction"
+                direction = (
+                    "✓ consistent" if p.consistent_direction else "~ mixed direction"
+                )
                 recency = f", {p.recent_count} recent" if p.recent_count > 0 else ""
                 offset = " ⚠️ constant offset" if p.constant_offset else ""
-                lines.append(f"**{p.section} — {p.label}** ({p.count}×{recency} {direction}{offset})")
+                lines.append(
+                    f"**{p.section} — {p.label}** ({p.count}×{recency} {direction}{offset})"
+                )
                 lines.append("")
                 for o in p.occurrences:
                     date_str = f" [{o.date}]" if o.date else ""
-                    lines.append(f"- {o.snapshot}{date_str}: {o.old_val} → {o.new_val}{_delta_str(o.delta)}")
+                    lines.append(
+                        f"- {o.snapshot}{date_str}: {o.old_val} → {o.new_val}{_delta_str(o.delta)}"
+                    )
                 lines.append("")
 
     # Suggestions section
     lines += ["---", "", "## Suggestions for Sunday Starter Template", ""]
 
     strong = [p for p in patterns if p.consistent_direction]
-    mixed  = [p for p in patterns if not p.consistent_direction]
+    mixed = [p for p in patterns if not p.consistent_direction]
 
     if not patterns:
         lines.append("_No patterns strong enough to suggest template updates._")
@@ -126,7 +139,9 @@ def render_report(
             for section, changes in by_section.items():
                 lines.append(f"  *{section}*")
                 for change in changes:
-                    lines.append(f"  - {change.label.label}: {change.label.old_fmt} → {change.label.new_fmt}{_delta_str(change.label.delta)}")
+                    lines.append(
+                        f"  - {change.label.label}: {change.label.old_fmt} → {change.label.new_fmt}{_delta_str(change.label.delta)}"
+                    )
                 lines.append("")
 
     return "\n".join(lines)

@@ -11,18 +11,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from snapwright.wing.parser import load_snap
 from snapwright.evolution.significance import is_significant
 from snapwright.evolution.translate import BUS_NAMES, ParamLabel, translate
-
+from snapwright.wing.parser import load_snap
 
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ParamChange:
-    path: str           # Wing JSON path within channel, e.g. "eq.1g"
+    path: str  # Wing JSON path within channel, e.g. "eq.1g"
     label: ParamLabel
 
 
@@ -85,8 +85,8 @@ def _flatten_channel(ch: dict) -> dict[str, Any]:
 
 def _context_for(ch: dict) -> dict:
     return {
-        "eq_model":   ch.get("eq",   {}).get("mdl", "STD"),
-        "dyn_model":  ch.get("dyn",  {}).get("mdl", "COMP"),
+        "eq_model": ch.get("eq", {}).get("mdl", "STD"),
+        "dyn_model": ch.get("dyn", {}).get("mdl", "COMP"),
         "gate_model": ch.get("gate", {}).get("mdl", "GATE"),
     }
 
@@ -94,6 +94,7 @@ def _context_for(ch: dict) -> dict:
 # ---------------------------------------------------------------------------
 # Near-equality (3 significant figures — Wing float quantization tolerance)
 # ---------------------------------------------------------------------------
+
 
 def _nearly_equal(a: Any, b: Any) -> bool:
     if type(a) is bool or type(b) is bool:
@@ -111,6 +112,7 @@ def _nearly_equal(a: Any, b: Any) -> bool:
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def diff_channels(
     number: int,
     base_ch: dict,
@@ -120,7 +122,7 @@ def diff_channels(
     name = target_ch.get("name", "").strip()
     ctx = _context_for(target_ch)
 
-    base_flat   = _flatten_channel(base_ch)
+    base_flat = _flatten_channel(base_ch)
     target_flat = _flatten_channel(target_ch)
 
     result = ChannelDiff(number=number, name=name)
@@ -149,7 +151,7 @@ def diff_snapshots(
     date: str | None,
 ) -> SnapshotDiff:
     """Diff all named channels between two loaded snap dicts."""
-    base_channels   = base["ae_data"]["ch"]
+    base_channels = base["ae_data"]["ch"]
     target_channels = target["ae_data"]["ch"]
 
     snap_diff = SnapshotDiff(name=name, date=date)
@@ -173,9 +175,11 @@ _DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
 
 def diff_snap_files(base_path: Path | str, target_path: Path | str) -> SnapshotDiff:
     """Load two .snap files and diff them."""
-    base_path   = Path(base_path)
+    base_path = Path(base_path)
     target_path = Path(target_path)
     name = target_path.stem
     date_match = _DATE_RE.search(target_path.name)
     date = date_match.group(1) if date_match else None
-    return diff_snapshots(load_snap(base_path), load_snap(target_path), name=name, date=date)
+    return diff_snapshots(
+        load_snap(base_path), load_snap(target_path), name=name, date=date
+    )

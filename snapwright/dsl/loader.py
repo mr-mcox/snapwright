@@ -87,6 +87,8 @@ def resolve_musician(entry: MusicianEntry, dsl_root: Path) -> dict[str, Any]:
             flt = proc.setdefault("filters", {})
             flt["gain"] = flt.get("gain", 0.0) + entry.offsets.gain
     return merged
+
+
 def _resolve_file(path: Path, dsl_root: Path) -> dict[str, Any]:
     """Load a YAML file and recursively resolve its own inherits."""
     raw: dict = _load_yaml(path)

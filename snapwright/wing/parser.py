@@ -25,6 +25,8 @@ _KNOWN_MODELS = {"wing", "ngc-full"}
 def _validate(data: dict, path: Path) -> None:
     model = data.get("creator_model")
     if model not in _KNOWN_MODELS:
-        raise ValueError(f"{path}: unrecognised creator_model={model!r} (expected one of {_KNOWN_MODELS})")
+        raise ValueError(
+            f"{path}: unrecognised creator_model={model!r} (expected one of {_KNOWN_MODELS})"
+        )
     if "ae_data" not in data or "ch" not in data["ae_data"]:
         raise ValueError(f"{path}: missing ae_data.ch")

@@ -10,12 +10,14 @@ default for this firmware version) when it's absent.
 """
 
 import copy
-from pathlib import Path
 from functools import cache
+from pathlib import Path
 
 from snapwright.wing.parser import load_snap
 
-_BASE_SNAP_PATH = Path(__file__).parent.parent.parent / "data" / "reference" / "Base.snap"
+_BASE_SNAP_PATH = (
+    Path(__file__).parent.parent.parent / "data" / "reference" / "Base.snap"
+)
 
 # Wing default for tapwid — observed in all James/Levin/Priscilla snapshots
 _TAPWID_DEFAULT = 100

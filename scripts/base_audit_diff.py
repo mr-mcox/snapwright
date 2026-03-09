@@ -32,11 +32,13 @@ def diff_flat(init_flat: dict, base_flat: dict) -> list[dict]:
         init_val = init_flat.get(key, "__MISSING__")
         base_val = base_flat.get(key, "__MISSING__")
         if init_val != base_val:
-            diffs.append({
-                "path": key,
-                "init": init_val,
-                "base": base_val,
-            })
+            diffs.append(
+                {
+                    "path": key,
+                    "init": init_val,
+                    "base": base_val,
+                }
+            )
     return diffs
 
 
