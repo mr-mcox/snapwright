@@ -20,7 +20,13 @@ The rendering pipeline uses Base.snap as its foundation — an opaque binary wit
 - Session-adjusted values: monitor faders, bus faders, main fader — these move per service
 - Sections explicitly excluded (see below)
 
-The diff script at `/tmp/clean_diff.py` is the integration test. Run it to see current gap.
+To validate: render `Init.snap + infrastructure.yaml + data/dsl/teams/james/assembly.yaml` using
+the existing `render_assembly()` pipeline, then parse both the rendered bytes and the reference
+file using the Wing parser (`WingSnapshot.from_bytes()`), and diff the resulting dicts section
+by section. Mask out: unused input channels (ch1-36 except ch37-40), `ce_data.layer` (user-layers
+feature), and float-precision-only differences (abs delta < 0.01 for numeric values). Focus
+diff output on ae_data.bus, ae_data.fx, ae_data.main, ae_data.ch (infra channels), ae_data.dca,
+ae_data.mgrp, ae_data.cfg.
 
 ## Not Doing
 
@@ -36,13 +42,23 @@ The diff script at `/tmp/clean_diff.py` is the integration test. Run it to see c
 Derived from diffing Init.snap + current infrastructure against Dec-14 James.snap.
 All values sourced from the Dec-14 reference unless noted.
 
-### FX slots (all 16)
-Full params for every slot — model + all tuned parameters. Pass-through schema
-(extra="allow" on FxSlotDef), no typed per-model fields needed.
+### FX slots (bus-wired only)
+Full params for bus-wired FX slots only. Pass-through schema (extra="allow" on FxSlotDef),
+no typed per-model fields needed.
 
-Notable: FX7 has fxmix=0 (it's a wet return routed via bus send level, not the fxmix knob).
-All 16 slots need modeling even channel-insert FX (EXCITER, BODY, DE-S2, PCORR, etc.)
-because we're rebuilding from Init which has all slots as NONE.
+- FX1: V-PLATE (drums reverb) — bus1 post-insert
+- FX2: VSS3 Church long reverb — bus11 pre-insert
+- FX5: VSS3 Ballad Vocal Hall medium reverb — bus10 pre-insert
+- FX6: TAP-DL slap delay — bus9 pre-insert
+- FX7: VSS3 Venue Warm 1 stream reverb — bus5 post-insert
+- FX3: deferred (inconsistent across team snapshots)
+
+Note FX7 has fxmix=0 — level controlled via bus send, not the mix knob.
+
+Deferred (Init has these as NONE, need modeling eventually but not this feature):
+- FX10: DE-S2 deesser — ch37 Handheld pre-insert
+- FX11: DE-S2 deesser — ch38 Headset pre-insert
+- FX13: GEQ — main.1 pre-insert
 
 ### Buses 1-12 (mix and FX return buses)
 Per bus: name, color, icon, led=False, fader, dynamics (SBUS model with per-bus params),
@@ -150,10 +166,13 @@ The Dec-14 James.snap is the correct reference for what infrastructure.yaml shou
 `snap_template()` returns Init.snap + infrastructure already applied. This enforces the
 invariant for all callers without requiring opt-in.
 
-### 2026-03-08 — FX scope: all 16 slots
+### 2026-03-08 — FX scope: bus-wired slots only
 
-User confirmed: if we're rebuilding from Init, all FX params must be modeled.
-Pass-through schema (extra="allow") keeps Pydantic schema simple despite per-model variation.
+Only FX slots that are wired to submix buses are in scope: FX1, FX2, FX5, FX6, FX7.
+FX3 is deferred (inconsistent across team snapshots). Channel-insert FX (FX10, FX11
+for infra channels; FX13 for main) are also deferred — they'll leave those inserts
+unpopulated until a follow-on feature models them.
+Pass-through schema (extra="allow") keeps Pydantic simple despite per-model variation.
 
 ### 2026-03-08 — ce_data.cfg: Init defaults match reference
 
@@ -169,4 +188,5 @@ These are set per-service. Infrastructure sets a reasonable start value; teams a
 
 Unit tests verify that each schema section renders to the correct snap path and that
 type coercions are correct. They do NOT verify specific YAML values appear in the snap
-(circular/useless). The diff script is the integration test that drives what to implement next.
+(circular/useless). A session-built diff harness against Dec-14 James.snap is the integration
+test that drives what to implement next (see Validation Target section for what to build).
