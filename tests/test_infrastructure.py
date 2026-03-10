@@ -327,3 +327,130 @@ class TestInfrastructureCfg:
         assert rta["rtasrc"] == 65
         assert rta["rtaauto"] is False
         assert rta["eqgain"] == -5
+
+
+class TestFirmwarePatchAuxMtx:
+    """aux and mtx EQ Q and dynsc.q must be patched to sqrt2."""
+
+    def test_aux_eq_q_patched(self):
+        """aux parametric EQ Q values must be patched (hq IS patched for aux)."""
+        snap = snap_template()
+        for aux_num, aux in snap["ae_data"].get("aux", {}).items():
+            for k, v in aux.get("eq", {}).items():
+                if k in ("1q", "2q", "lq") and isinstance(v, float):
+                    assert abs(v - _PATCHED_Q) < 0.01, (
+                        f"aux.{aux_num}.eq.{k}={v}, expected ~{_PATCHED_Q}"
+                    )
+
+    def test_aux_hq_patched(self):
+        """aux hq (high-shelf Q) IS patched — unlike buses where it's left alone."""
+        snap = snap_template()
+        for aux_num, aux in snap["ae_data"].get("aux", {}).items():
+            hq = aux.get("eq", {}).get("hq")
+            if isinstance(hq, float):
+                assert abs(hq - _PATCHED_Q) < 0.01, (
+                    f"aux.{aux_num}.eq.hq={hq}, expected ~{_PATCHED_Q}"
+                )
+
+    def test_mtx_eq_q_patched(self):
+        """mtx parametric EQ Q values must be patched (hq NOT patched for mtx)."""
+        snap = snap_template()
+        for mtx_num, mtx in snap["ae_data"].get("mtx", {}).items():
+            for k, v in mtx.get("eq", {}).items():
+                if k in ("1q", "2q", "lq") and isinstance(v, float):
+                    assert abs(v - _PATCHED_Q) < 0.01, (
+                        f"mtx.{mtx_num}.eq.{k}={v}, expected ~{_PATCHED_Q}"
+                    )
+
+    def test_mtx_hq_not_patched(self):
+        """mtx hq stays at Init default — same pattern as buses."""
+        snap = snap_template()
+        for mtx_num, mtx in snap["ae_data"].get("mtx", {}).items():
+            hq = mtx.get("eq", {}).get("hq")
+            if isinstance(hq, float):
+                assert abs(hq - _INIT_Q) < 0.01, (
+                    f"mtx.{mtx_num}.eq.hq={hq}, expected Init default ~{_INIT_Q}"
+                )
+
+    def test_aux_dynsc_q_patched(self):
+        snap = snap_template()
+        for aux_num, aux in snap["ae_data"].get("aux", {}).items():
+            q = aux.get("dynsc", {}).get("q")
+            if q is not None and isinstance(q, float):
+                assert abs(q - _PATCHED_DYNSC_Q) < 0.01, (
+                    f"aux.{aux_num}.dynsc.q={q}, expected ~{_PATCHED_DYNSC_Q}"
+                )
+
+    def test_mtx_dynsc_q_patched(self):
+        snap = snap_template()
+        for mtx_num, mtx in snap["ae_data"].get("mtx", {}).items():
+            q = mtx.get("dynsc", {}).get("q")
+            if q is not None and isinstance(q, float):
+                assert abs(q - _PATCHED_DYNSC_Q) < 0.01, (
+                    f"mtx.{mtx_num}.dynsc.q={q}, expected ~{_PATCHED_DYNSC_Q}"
+                )
+
+
+class TestOutputRouting:
+    """Physical output routing (io.out) derived from infrastructure.yaml outputs: keys.
+
+    Renderer derives Wing-native {grp, in} from context:
+    - mains: grp=MAIN, in=main_num (one slot per main; mains 3+ masked in diff)
+    - monitor buses: grp=BUS, in=bus_num*2-1 (Wing's L-channel virtual index)
+    """
+    def _io_out(self, snap: dict) -> dict:
+        return snap["ae_data"]["io"]["out"]
+        """mains.1 outputs: A: 1 → {grp: MAIN, in: 1}"""
+        io_out = self._io_out(snap_template())
+        assert io_out["A"]["1"] == {"grp": "MAIN", "in": 1}
+    def test_main2_to_stage_box_a2(self):
+        """mains.2 outputs: A: 2 → {grp: MAIN, in: 2}"""
+        io_out = self._io_out(snap_template())
+        assert io_out["A"]["2"] == {"grp": "MAIN", "in": 2}
+        """Monitor buses 13-16 route to A.3-A.6; in derived as bus_num*2-1."""
+        io_out = self._io_out(snap_template())
+        assert io_out["A"]["3"] == {"grp": "BUS", "in": 25}  # bus 13: 13*2-1=25
+        assert io_out["A"]["4"] == {"grp": "BUS", "in": 27}  # bus 14: 14*2-1=27
+        assert io_out["A"]["5"] == {"grp": "BUS", "in": 29}  # bus 15: 15*2-1=29
+        assert io_out["A"]["6"] == {"grp": "BUS", "in": 31}  # bus 16: 16*2-1=31
+
+
+class TestAuxDefaults:
+    """AUX structural defaults and infrastructure settings."""
+
+    def test_aux1_name(self):
+        snap = snap_template()
+        assert snap["ae_data"]["aux"]["1"]["name"] == "USB 1/2"
+
+    def test_aux_send_modes_post_for_buses_1_to_12(self):
+        """All aux channels must have POST send mode for buses 1-12."""
+        snap = snap_template()
+        for aux_num, aux in snap["ae_data"].get("aux", {}).items():
+            send = aux.get("send", {})
+            for bus in [str(i) for i in range(1, 13)]:
+                if bus in send:
+                    mode = send[bus].get("mode")
+                    assert mode == "POST", (
+                        f"aux.{aux_num}.send.{bus}.mode={mode!r}, expected POST"
+                    )
+
+    def test_aux_send_modes_pre_for_buses_13_to_16(self):
+        """All aux channels must have PRE send mode for buses 13-16."""
+        snap = snap_template()
+        for aux_num, aux in snap["ae_data"].get("aux", {}).items():
+            send = aux.get("send", {})
+            for bus in [str(i) for i in range(13, 17)]:
+                if bus in send:
+                    mode = send[bus].get("mode")
+                    assert mode == "PRE", (
+                        f"aux.{aux_num}.send.{bus}.mode={mode!r}, expected PRE"
+                    )
+
+    def test_aux_main_outputs_off(self):
+        """All aux channels must have all main outputs off."""
+        snap = snap_template()
+        for aux_num, aux in snap["ae_data"].get("aux", {}).items():
+            for out_key, out_cfg in aux.get("main", {}).items():
+                assert out_cfg.get("on") is False, (
+                    f"aux.{aux_num}.main.{out_key}.on should be False"
+                )

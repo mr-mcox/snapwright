@@ -59,8 +59,7 @@ def _patch_dynsc_q(dynsc: dict) -> None:
 
 def apply_firmware_patches(snap: dict) -> None:
     """Apply firmware-version corrections to the full snap dict in-place.
-
-    Covers all buses, mains, cfg.mon, and all channels.
+    Covers all buses, mains, aux, mtx, cfg.mon, and all channels.
     """
     ae = snap["ae_data"]
 
@@ -93,6 +92,18 @@ def apply_firmware_patches(snap: dict) -> None:
         _patch_dynsc_q(ch.get("dynsc", {}))
         _patch_dynsc_q(ch.get("gatesc", {}))   # gate sidechain uses dynsc Q default
         _patch_eq_q(ch.get("peq", {}), patch_hq=True)  # parallel EQ section
+
+    # AUX channels — patch parametric EQ Q (hq IS patched; same as channels)
+    # and dynsc.q. Both james and priscilla reference snaps confirm this.
+    for aux in ae.get("aux", {}).values():
+        _patch_eq_q(aux.get("eq", {}), patch_hq=True)
+        _patch_dynsc_q(aux.get("dynsc", {}))
+
+    # MTX channels — patch parametric EQ Q (hq NOT patched; same as buses)
+    # and dynsc.q.
+    for mtx in ae.get("mtx", {}).values():
+        _patch_eq_q(mtx.get("eq", {}))
+        _patch_dynsc_q(mtx.get("dynsc", {}))
 
 
 def patch_channel_firmware(ch: dict) -> None:
@@ -155,6 +166,8 @@ def apply_infrastructure(snap: dict, infra_path: Path | None = None) -> None:
     _apply_fx(ae, infra.get("fx", {}))
     _apply_buses(ae, infra.get("buses", {}))
     _apply_mains(ae, infra.get("mains", {}))
+    _apply_aux_structural_defaults(ae)
+    _apply_aux(ae, infra.get("aux", {}))
     _apply_dca(ae, infra.get("dca", {}))
     _apply_mgrp(ae, infra.get("mgrp", {}))
     _apply_cfg(ae, infra.get("cfg", {}))
@@ -316,6 +329,8 @@ def _apply_single_bus(bus: dict, bus_cfg: dict) -> None:
 def _apply_buses(ae: dict, buses_config: dict) -> None:
     for bus_str, bus_cfg in buses_config.items():
         _apply_single_bus(ae["bus"][str(bus_str)], bus_cfg)
+        if "outputs" in bus_cfg:
+            _apply_bus_outputs(ae, int(bus_str), bus_cfg["outputs"])
 
 # ---------------------------------------------------------------------------
 # Main outputs
@@ -353,6 +368,8 @@ def _apply_mains(ae: dict, mains_config: dict) -> None:
             main["preins"].update(out_cfg["preins"])
         if "postins" in out_cfg:
             main["postins"].update(out_cfg["postins"])
+        if "outputs" in out_cfg:
+            _apply_main_outputs(ae, int(out_key), out_cfg["outputs"])
 
 
 # ---------------------------------------------------------------------------
@@ -492,6 +509,76 @@ def _apply_channels(ae: dict, channels_config: dict) -> None:
                 ch["main"][str(out_key)].update(out_cfg)
         if "send" in ch_cfg:
             ch["send"] = _build_infra_channel_sends(ch_cfg["send"])
+
+# ---------------------------------------------------------------------------
+# Physical output routing (io.out)
+# ---------------------------------------------------------------------------
+
+def _apply_main_outputs(ae: dict, main_num: int, outputs: dict) -> None:
+    """Write main output routing into ae_data.io.out.
+
+    outputs: {port_group: slot_number}  e.g. {"A": 1}
+    Derives Wing fields: grp="MAIN", in=main_num.
+    No stereo complexity — mains 1 and 2 are the only outputs expressed;
+    mains 3+ are masked in the diff harness.
+    """
+    io_out = ae["io"]["out"]
+    for port_grp, slot in outputs.items():
+        io_out.setdefault(port_grp, {})[str(slot)] = {"grp": "MAIN", "in": main_num}
+
+
+def _apply_bus_outputs(ae: dict, bus_num: int, outputs: dict) -> None:
+    """Write monitor bus output routing into ae_data.io.out.
+
+    outputs: {port_group: slot_number}  e.g. {"A": 3}
+    Derives Wing fields: grp="BUS", in=bus_num*2-1 (Wing virtual L-channel index).
+    """
+    bus_in = bus_num * 2 - 1
+    io_out = ae["io"]["out"]
+    for port_grp, slot in outputs.items():
+        io_out.setdefault(port_grp, {})[str(slot)] = {"grp": "BUS", "in": bus_in}
+
+
+# ---------------------------------------------------------------------------
+# AUX structural defaults
+# ---------------------------------------------------------------------------
+
+_AUX_POST_BUSES = [str(i) for i in range(1, 13)]   # buses 1-12: POST
+_AUX_PRE_BUSES  = [str(i) for i in range(13, 17)]  # buses 13-16: PRE
+
+
+def _apply_aux_structural_defaults(ae: dict) -> None:
+    """Fix Init.snap aux send modes and ensure aux doesn't route to mains.
+
+    Init.snap has buses 1-8 as PRE, 9-10 as GRP, 11-16 as POST.
+    Both james and priscilla reference snaps have POST for 1-12, PRE for 13-16.
+    This is a fixed infrastructure patch (same class as firmware Q patches).
+    LCL outputs are masked in the diff harness so Init.snap LCL defaults
+    are not cleared here.
+    """
+    for aux in ae.get("aux", {}).values():
+        send = aux.get("send", {})
+        for k in _AUX_POST_BUSES:
+            if k in send:
+                send[k]["mode"] = "POST"
+        for k in _AUX_PRE_BUSES:
+            if k in send:
+                send[k]["mode"] = "PRE"
+        # Aux outputs never route to mains
+        for out_cfg in aux.get("main", {}).values():
+            if isinstance(out_cfg, dict):
+                out_cfg["on"] = False
+
+
+def _apply_aux(ae: dict, aux_config: dict) -> None:
+    """Apply aux section from infrastructure.yaml (name and other scalar fields)."""
+    for aux_str, aux_cfg in aux_config.items():
+        aux_key = str(aux_str)
+        if aux_key not in ae.get("aux", {}):
+            continue
+        aux = ae["aux"][aux_key]
+        if "name" in aux_cfg:
+            aux["name"] = aux_cfg["name"]
 
 # ---------------------------------------------------------------------------
 # Helpers
