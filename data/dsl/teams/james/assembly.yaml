@@ -144,6 +144,10 @@ musicians:
       - musicians/headset.yaml
     mute: false   # spare mic, unmuted on this team
 
+  piano:
+    inherits:
+      - musicians/piano.yaml
+
 # ---------------------------------------------------------------------------
 # Physical layout — where they sit on the desk
 # ---------------------------------------------------------------------------
@@ -170,6 +174,7 @@ channels:
   # Spares
   37: handheld
   38: headset
+  15: piano
 
 inputs:
   kick:          2
@@ -189,6 +194,7 @@ inputs:
   yolaine-vox:   13
   handheld:      32
   headset:       31
+  piano:         1
 
 buses:
   1:  drums
@@ -263,3 +269,46 @@ monitors:
     yolaine-vox:   -16.11
     handheld:      -12.30
     headset:       -29.98
+
+# ---------------------------------------------------------------------------
+# Personal mixer (P16) — A.33-A.48
+# Groups: musicians → level offsets from 0 dB (omit musician to exclude)
+# Individuals: musician + tap point (PRE/POST)
+# ---------------------------------------------------------------------------
+
+personal_mixer:
+  groups:
+    Drum Set:
+      kick:       0
+      snare:      0
+      tom:        0
+      overhead:   0
+    Congas:       # empty for James team
+    Back Vox:
+      anna-vox:   0
+      yolaine-vox: 0
+    Guitars:
+      james-guitar: 0
+      violin:       0
+    Other Inst:
+      flute:        0
+    Wireless:
+      handheld:     0
+      headset:      0
+
+  individuals:
+    Bass:
+      musician: bass
+      tap: PRE
+    Lead 1:
+      musician: priscilla-vox
+      tap: POST
+    Lead 2:
+      musician: james-vox
+      tap: POST
+    Piano:
+      musician: piano
+      tap: PRE
+    Keys:
+      musician:     # null — no keys player on James team
+      tap: PRE

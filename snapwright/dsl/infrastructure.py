@@ -172,6 +172,7 @@ def apply_infrastructure(snap: dict, infra_path: Path | None = None) -> None:
     _apply_mgrp(ae, infra.get("mgrp", {}))
     _apply_cfg(ae, infra.get("cfg", {}))
     _apply_channels(ae, infra.get("channels", {}))
+    _apply_personal_mixer(ae, infra)
 
 
 # ---------------------------------------------------------------------------
@@ -591,3 +592,102 @@ def _deep_update(target: dict, source: dict) -> None:
             _deep_update(target[k], v)
         else:
             target[k] = v
+
+
+# ---------------------------------------------------------------------------
+# Personal mixer (P16) — slot topology + infrastructure rendering
+# ---------------------------------------------------------------------------
+
+# Monitor logical-name → bus number. These are invariant across all teams.
+_MONITOR_BUS_NUMBERS: dict[str, int] = {
+    "monitor_1": 13,
+    "monitor_2": 14,
+    "monitor_3": 15,
+    "monitor_4": 16,
+}
+
+
+def get_p16_slots(infra_yaml: dict) -> list[dict]:
+    """Parse personal_mixer.slots from infrastructure.yaml into numbered slot dicts.
+
+    Returns a list of 16 dicts, each with:
+      slot_num  : int  1-16 (physical P16 channel position)
+      a_out     : str  Wing stage-box output slot ("33"–"48")
+      type      : str  "group" | "individual" | "monitor" | "off"
+      label     : str | None  (display label; None for off slots)
+      bus       : str | None  (logical bus name; monitor slots only)
+      mx_num    : int | None  (sequential MX number; group slots only)
+      usr_num   : int | None  (sequential USR number; individual slots only)
+    """
+    raw_slots = infra_yaml.get("personal_mixer", {}).get("slots", [])
+    result: list[dict] = []
+    mx_counter = 1
+    usr_counter = 1
+    for i, slot_cfg in enumerate(raw_slots):
+        slot_type = slot_cfg.get("type", "off")
+        label = slot_cfg.get("label")
+        bus = slot_cfg.get("bus")
+        mx_num = None
+        usr_num = None
+        if slot_type == "group":
+            mx_num = mx_counter
+            mx_counter += 1
+        elif slot_type == "individual":
+            usr_num = usr_counter
+            usr_counter += 1
+        result.append({
+            "slot_num": i + 1,
+            "a_out": str(32 + i + 1),
+            "type": slot_type,
+            "label": label,
+            "bus": bus,
+            "mx_num": mx_num,
+            "usr_num": usr_num,
+        })
+    return result
+
+
+def _apply_personal_mixer(ae: dict, infra_yaml: dict) -> None:
+    """Apply personal mixer infrastructure to snap:
+
+    - Write matrix names + faders for group slots
+    - Write USR source label defaults for individual slots (channel assignment
+      deferred to assembly rendering)
+    - Write io.out A.33-A.48 routing for all 16 slots
+    """
+    slots = get_p16_slots(infra_yaml)
+    if not slots:
+        return
+
+    io_out_a = ae["io"]["out"].setdefault("A", {})
+    usr_in = ae["io"]["in"]["USR"]
+
+    for s in slots:
+        a_key = s["a_out"]
+
+        if s["type"] == "group":
+            n = s["mx_num"]
+            mtx = ae["mtx"][str(n)]
+            mtx["name"] = s["label"] or ""
+            mtx["fdr"] = 0.0
+            io_out_a[a_key] = {"grp": "MTX", "in": (n * 2) - 1}
+
+        elif s["type"] == "individual":
+            n = s["usr_num"]
+            usr = usr_in[str(n)]
+            usr["name"] = s["label"] or ""
+            # Leave user.grp=OFF — assembly renderer populates the channel
+            io_out_a[a_key] = {"grp": "USR", "in": n}
+
+        elif s["type"] == "monitor":
+            bus_name = s["bus"] or ""
+            bus_num = _MONITOR_BUS_NUMBERS.get(bus_name)
+            if bus_num is None:
+                raise ValueError(
+                    f"P16 monitor slot references unknown bus {bus_name!r}. "
+                    f"Known: {list(_MONITOR_BUS_NUMBERS)}"
+                )
+            io_out_a[a_key] = {"grp": "BUS", "in": (bus_num * 2) - 1}
+
+        else:  # off
+            io_out_a[a_key] = {"grp": "OFF", "in": 1}

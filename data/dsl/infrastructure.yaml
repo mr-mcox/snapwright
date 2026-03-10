@@ -632,3 +632,42 @@ channels:
       14: { mode: PRE,  plink: false }
       15: { mode: PRE,  plink: false }
       16: { mode: PRE,  plink: false }
+
+# ===========================================================================
+# Personal mixer (P16) — slot topology
+# 16 slots map to stage-box outputs A.33-A.48 in order.
+# Groups get consecutive MX numbers; individuals get consecutive USR numbers.
+# The physical slot order is the canonical ordering — MX/USR numbering follows.
+# ===========================================================================
+
+personal_mixer:
+  slots:
+    - label: Bass          # A.33 → USR.1
+      type: individual
+    - label: Drum Set      # A.34 → MX1
+      type: group
+    - label: Congas        # A.35 → MX2
+      type: group
+    - type: off            # A.36
+    - label: Lead 1        # A.37 → USR.2
+      type: individual
+    - label: Lead 2        # A.38 → USR.3
+      type: individual
+    - label: Back Vox      # A.39 → MX3
+      type: group
+    - type: off            # A.40
+    - label: Piano         # A.41 → USR.4
+      type: individual
+    - label: Keys          # A.42 → USR.5
+      type: individual
+    - label: Guitars       # A.43 → MX4
+      type: group
+    - label: Other Inst    # A.44 → MX5
+      type: group
+    - type: off            # A.45
+    - type: off            # A.46
+    - label: Wireless      # A.47 → MX6
+      type: group
+    - label: Drums Mon     # A.48 → BUS.16 (Monitor/4)
+      type: monitor
+      bus: monitor_4

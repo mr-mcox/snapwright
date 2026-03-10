@@ -20,7 +20,7 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from snapwright.dsl.infrastructure import patch_channel_firmware
+from snapwright.dsl.infrastructure import get_p16_slots, patch_channel_firmware
 from snapwright.dsl.loader import load_assembly, resolve_musician
 from snapwright.dsl.schema import AssemblyDef
 from snapwright.wing.defaults import channel_defaults, snap_template
@@ -96,6 +96,7 @@ def render_assembly(
     if output_path is not None:
         save_snap(snap, output_path)
 
+
     return snap
 
 
@@ -159,6 +160,14 @@ def _render(assembly: AssemblyDef, dsl_root: Path) -> dict:
                 send["lvl"] = offset  # no default: treat as absolute
                 send["on"] = True
                 send["mode"] = "PRE"
+
+    # Apply personal mixer assembly (MX sends + USR channel assignments)
+    if assembly.personal_mixer is not None:
+        import yaml as _yaml
+        _infra_path = Path(__file__).parent.parent.parent / "data" / "dsl" / "infrastructure.yaml"
+        _infra = _yaml.safe_load(_infra_path.read_text())
+        _slots = get_p16_slots(_infra)
+        _apply_personal_mixer_assembly(snap, assembly, musician_to_ch, _slots)
 
     return snap
 
@@ -454,3 +463,84 @@ def _apply_sends(
         sends[bus_key]["lvl"] = level
         sends[bus_key]["mode"] = "PRE" if is_monitor else "POST"
     ch["send"] = sends
+
+
+# ---------------------------------------------------------------------------
+# Personal mixer assembly rendering
+# ---------------------------------------------------------------------------
+
+
+def _apply_personal_mixer_assembly(
+    snap: dict,
+    assembly: AssemblyDef,
+    musician_to_ch: dict[str, int],
+    slots: list[dict],
+) -> None:
+    """Write MX channel sends (groups) and USR source assignments (individuals).
+
+    Called after channel rendering so send dicts already exist.
+    Infrastructure has already written matrix names and io.out A.33-A.48.
+    """
+    ae = snap["ae_data"]
+    pm = assembly.personal_mixer
+    if pm is None:
+        return
+
+    for s in slots:
+        if s["type"] == "group":
+            _apply_group_slot(ae, pm, musician_to_ch, s)
+        elif s["type"] == "individual":
+            _apply_individual_slot(ae, pm, musician_to_ch, s)
+        # monitor and off slots: io.out written by infrastructure, nothing more needed
+
+
+def _apply_group_slot(
+    ae: dict,
+    pm,
+    musician_to_ch: dict[str, int],
+    slot: dict,
+) -> None:
+    """Write send.MX{n} on each musician channel assigned to this group slot."""
+    label = slot["label"]
+    mx_key = f"MX{slot['mx_num']}"
+    assignments = (pm.groups or {}).get(label) or {}
+    for musician_name, level in assignments.items():
+        ch_num = musician_to_ch.get(musician_name)
+        if ch_num is None:
+            continue  # musician not on this team
+        send = ae["ch"][str(ch_num)]["send"][mx_key]
+        send["on"] = True
+        send["lvl"] = float(level)
+        # mode/plink already set to PRE/True by _apply_sends default
+
+
+def _apply_individual_slot(
+    ae: dict,
+    pm,
+    musician_to_ch: dict[str, int],
+    slot: dict,
+) -> None:
+    """Write USR source channel assignment for this individual slot."""
+    label = slot["label"]
+    usr_key = str(slot["usr_num"])
+    ind = (pm.individuals or {}).get(label)
+    if ind is None:
+        return  # not declared in assembly — stays OFF (infrastructure default)
+
+    usr = ae["io"]["in"]["USR"][usr_key]
+    if ind.musician is None:
+        # Explicitly unassigned — leave grp=OFF, keep label
+        usr["user"]["grp"] = "OFF"
+        usr["user"]["in"] = 1
+        return
+
+    ch_num = musician_to_ch.get(ind.musician)
+    if ch_num is None:
+        return  # musician not on this team
+
+    usr["user"] = {
+        "grp": "CH",
+        "in": ch_num,
+        "tap": ind.tap,
+        "lr": "L+R",
+    }
