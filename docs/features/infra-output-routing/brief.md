@@ -3,7 +3,7 @@ feature: infra-output-routing
 date: 2026-03-09
 commit: dfce014
 branch: infrastructure-dsl
-status: implementing
+status: compacting
 read-when: starting implementation of physical output routing in infrastructure
 ---
 
