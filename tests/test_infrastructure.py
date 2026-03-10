@@ -51,8 +51,8 @@ class TestFirmwarePatch:
     def test_bus_eq_q_patched_to_sqrt2(self):
         """Bus EQ Q values (lq, 1q-6q) should be patched to sqrt2 on configured buses.
 
-        Exception: bus 8 was never configured by the operator; infrastructure.yaml
-        explicitly resets its Q values back to the Init default (0.997970223).
+        Exception: bus 8 was never configured by the operator; the firmware patch
+        skips it entirely, so Init.snap Q values (0.997970223) stand naturally.
         hq (high-shelf Q) is never patched on any bus.
         """
         snap = snap_template()
@@ -64,7 +64,7 @@ class TestFirmwarePatch:
                     assert abs(v - _PATCHED_Q) < 0.01, (
                         f"bus.{bus_num}.eq.{k}={v}, expected ~{_PATCHED_Q}"
                     )
-        # Bus 8 EQ Q stays at Init default (infrastructure resets it)
+        # Bus 8 EQ Q stays at Init default (firmware patch skips bus 8)
         bus8_eq = snap["ae_data"]["bus"]["8"]["eq"]
         for k in ("lq", "1q"):
             v = bus8_eq.get(k)
@@ -90,8 +90,8 @@ class TestFirmwarePatch:
     def test_bus_dynsc_q_patched(self):
         """Bus dynsc.q should be ~sqrt2 for configured buses.
 
-        Exception: bus 8 was never configured; its dynsc.q stays at Init default
-        (infrastructure.yaml resets it via dynsc.q override).
+        Exception: bus 8 was never configured; the firmware patch skips it,
+        so dynsc.q stays at Init default naturally.
         """
         snap = snap_template()
         for bus_num, bus in snap["ae_data"]["bus"].items():

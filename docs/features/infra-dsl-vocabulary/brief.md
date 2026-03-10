@@ -3,7 +3,7 @@ feature: infra-dsl-vocabulary
 date: 2026-03-09
 commit: bd53dc5
 branch: infrastructure-dsl
-status: solution-space
+status: implementing
 read-when: starting implementation of infra vocabulary cleanup
 ---
 

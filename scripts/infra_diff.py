@@ -115,11 +115,18 @@ def diff_fx(rendered_snap: dict, ref_snap: dict) -> list[str]:
 
 
 def diff_bus(rendered_snap: dict, ref_snap: dict) -> list[str]:
-    """Diff ae_data.bus (all 16). Mask session-adjusted faders."""
+    """Diff ae_data.bus (all 16). Mask session-adjusted faders and bus 8.
+
+    Bus 8 is excluded: never operator-configured factory debris. Its Q values
+    differ between rendered (Init default, firmware patch skipped) and reference
+    (varies) but carry no operational meaning.
+    """
     lines = []
     rendered = rendered_snap["ae_data"].get("bus", {})
     reference = ref_snap["ae_data"].get("bus", {})
     for bus_num in [str(i) for i in range(1, 17)]:
+        if bus_num == "8":
+            continue  # bus 8 masked — never configured, factory debris
         r = dict(rendered.get(bus_num, {}))
         f = dict(reference.get(bus_num, {}))
         # Faders are session-adjusted on all buses (mix + monitor)

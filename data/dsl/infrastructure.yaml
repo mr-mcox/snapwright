@@ -4,8 +4,11 @@
 # This file + Init.snap defines the console's "house baseline" from which all
 # team assemblies are rendered.
 #
-# Schema convention: Wing snap field names are used directly (no DSL translation).
-# For documentation, comments explain why each value exists.
+# Vocabulary: most operator-tunable parameters use human-readable DSL names
+# (model, threshold, attack, release, bands, high_shelf, etc.) translated by
+# infrastructure.py. Wing-native field names remain only where translation is
+# deferred (icon numbers, color numbers) or explicitly out of scope (FX preset
+# blobs). See docs/learnings/infra-dsl-vocabulary.md for the full picture.
 
 # ===========================================================================
 # FX slots — bus-wired effects only
@@ -164,14 +167,14 @@ buses:
     icon: 210
     led: false
     dyn:
-      mdl: SBUS
+      model: SBUS
       on: true
       mix: 100
       gain: 1         # +1 dB makeup gain
-      thr: -15
+      threshold: -15
       ratio: 2
-      att: 10
-      rel: "0.1"      # Wing stores release as string for SBUS
+      attack: 10
+      release: 0.1
     main:
       1: { on: true,  lvl: -0.08 }
       2: { on: true,  lvl: -0.5 }
@@ -186,14 +189,14 @@ buses:
     icon: 300
     led: false
     dyn:
-      mdl: SBUS
+      model: SBUS
       on: true
       mix: 100
       gain: 0
-      thr: -18.5
+      threshold: -18.5
       ratio: 2
-      att: 10
-      rel: "0.4"
+      attack: 10
+      release: 0.4
     main:
       1: { on: true, lvl: -0.18 }
       2: { on: false, lvl: 0.2 }   # Wing stores "0 dB" as 0.200002193; write 0.2
@@ -206,14 +209,14 @@ buses:
     icon: 300
     led: false
     dyn:
-      mdl: SBUS
+      model: SBUS
       on: true
       mix: 100
       gain: 0
-      thr: -13
+      threshold: -13
       ratio: 2
-      att: 0.3
-      rel: "0.4"
+      attack: 0.3
+      release: 0.4
     main:
       1: { on: false, lvl: -0.3 }
       2: { on: true,  lvl: 0.2 }
@@ -226,14 +229,14 @@ buses:
     icon: 9
     led: false
     dyn:
-      mdl: SBUS
+      model: SBUS
       on: true
       mix: 100
       gain: 0
-      thr: -19
+      threshold: -19
       ratio: 2
-      att: 0.3
-      rel: "0.4"
+      attack: 0.3
+      release: 0.4
     main:
       1: { on: true,  lvl: -0.46 }
       2: { on: false, lvl: -0.1 }
@@ -246,14 +249,14 @@ buses:
     icon: 9
     led: false
     dyn:
-      mdl: SBUS
+      model: SBUS
       on: true
       mix: 100
       gain: 0
-      thr: -18
+      threshold: -18
       ratio: 2
-      att: 10
-      rel: "0.4"
+      attack: 10
+      release: 0.4
     main:
       1: { on: false, lvl: 0.19 }
       2: { on: true,  lvl: -0.4 }
@@ -267,14 +270,14 @@ buses:
     icon: 111
     led: false
     dyn:
-      mdl: SBUS
+      model: SBUS
       on: true
       mix: 100
       gain: 0
-      thr: -23.5
+      threshold: -23.5
       ratio: 2
-      att: 10
-      rel: "0.4"
+      attack: 10
+      release: 0.4
     main:
       1: { on: true, lvl: 0.21 }
       2: { on: true, lvl: 0 }
@@ -285,38 +288,18 @@ buses:
     color: 3
     led: false
     dyn:
-      mdl: SBUS
+      model: SBUS
       on: true
       mix: 100
       gain: 0
-      thr: -21
+      threshold: -21
       ratio: 2
-      att: 10
-      rel: "0.4"
+      attack: 10
+      release: 0.4
     main:
       1: { on: false, lvl: -144 }
       2: { on: true, lvl: 0 }
     tags: "#M5,#M6"
-
-  # Bus 8: Stage feed (house) — goes to house only; keeps COMP dynamics (not SBUS)
-  # Never configured by operator — ALL EQ Q and dynsc.q stay at Wing init default.
-  # Explicitly reset here to counteract the global firmware patch.
-  8:
-    color: 1
-    # led is true in reference — bus 8 was never fully set up, keeping factory state
-    main:
-      1: { on: true }
-    eq:
-      lq: 0.997970223
-      1q: 0.997970223
-      2q: 0.997970223
-      3q: 0.997970223
-      4q: 0.997970223
-      5q: 0.997970223
-      6q: 0.997970223
-    dynsc:
-      q: 1.995881796   # reset dynsc.q (global patch sets to sqrt2, but bus8 was never touched)
-
   # --- FX return buses 9-12 (no SBUS, COMP dynamics off) ---
 
   # Bus 9: Delay/Slap — FX6 pre-insert (slap delay input), FX3 post-insert
@@ -382,8 +365,9 @@ buses:
     icon: 520
     led: false
     eq:
-      4f: 1795.374634   # band 4 freq differs from Init default
-      5f: 2971.015869   # band 5 freq differs from Init default
+      bands:
+        4: { freq: 1795.374634 }   # band 4 freq differs from Init default
+        5: { freq: 2971.015869 }   # band 5 freq differs from Init default
     main:
       1: { on: false }
       2: { on: true, lvl: -144 }    # technically goes to stream but at -144 (off)
@@ -431,43 +415,25 @@ mains:
     icon: 509
     led: false
     dyn:
-      mdl: 76LA
+      model: 76LA
       on: true
       mix: 100
       gain: 0
-      in: -43.5       # input threshold
-      out: -13        # output level
-      att: 1.7
-      rel: 1.8
-      ratio: "20"     # Wing stores 76LA ratio as string
+      input: -43.5
+      output: -13
+      attack: 1.7
+      release: 1.8
+      ratio: 20
     eq:
       on: true
-      # Flat bands 1 and 6 — no gain, default Q
-      1g: 0
-      # Band 2: ~200 Hz -4.5 dB
-      2g: -4.5
-      2f: 197.1423645
-      2q: 2.139127016
-      # Band 3: ~1 kHz -1 dB
-      3g: -1.0
-      3f: 1016.9
-      3q: 1.126667023
-      # Band 4: 2 kHz -2.7 dB
-      4g: -2.7
-      4f: 2000.0
-      4q: 2.871897459
-      # Band 5: 3.3 kHz -5.7 dB
-      5g: -5.7
-      5f: 3333.5354
-      5q: 4.829830647
-      # Band 6: 4.2 kHz -0.3 dB
-      6g: -0.3
-      6f: 4166.581543
-      6q: 1.411322355
-      # High shelf: 8.3 kHz -4.1 dB, Q=~1 (deliberate — not a firmware artifact)
-      hg: -4.1
-      hf: 8313.426758
-      hq: 0.997970223   # deliberately set to ~1, not √2
+      bands:
+        1: { gain: 0 }                                         # flat
+        2: { gain: -4.5, freq: 197.1423645,  q: 2.139127016 } # ~200 Hz -4.5 dB
+        3: { gain: -1.0, freq: 1016.9,       q: 1.126667023 } # ~1 kHz -1 dB
+        4: { gain: -2.7, freq: 2000.0,       q: 2.871897459 } # 2 kHz -2.7 dB
+        5: { gain: -5.7, freq: 3333.5354,    q: 4.829830647 } # 3.3 kHz -5.7 dB
+        6: { gain: -0.3, freq: 4166.581543,  q: 1.411322355 } # 4.2 kHz -0.3 dB
+      high_shelf: { gain: -4.1, freq: 8313.426758, q: 0.997970223 } # deliberately Q=~1, not √2
     in:
       set:
         trim: -4.5    # trims analog level going in
@@ -481,15 +447,15 @@ mains:
     icon: 606
     led: false
     dyn:
-      mdl: 76LA
+      model: 76LA
       on: true
       mix: 100
       gain: 0
-      in: -41.0
-      out: -14.5
-      att: 1.7
-      rel: 2.0
-      ratio: "20"
+      input: -41.0
+      output: -14.5
+      attack: 1.7
+      release: 2.0
+      ratio: 20
 
   # Main.3: third output — led=false, fdr=-70.1 (fixed, not session)
   3:

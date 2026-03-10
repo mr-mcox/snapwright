@@ -63,8 +63,11 @@ def apply_firmware_patches(snap: dict) -> None:
     ae = snap["ae_data"]
 
     # Buses 1-16 — patch parametric EQ Q and dynsc.q globally.
-    # Bus 8 is the exception (never configured); infrastructure.yaml resets it.
-    for bus in ae.get("bus", {}).values():
+    # Bus 8 is excluded: never operator-configured; firmware patch skipped so
+    # Init.snap Q values stand (bus 8 is masked in the diff harness).
+    for bus_num, bus in ae.get("bus", {}).items():
+        if bus_num == "8":
+            continue
         _patch_eq_q(bus.get("eq", {}))
         _patch_dynsc_q(bus.get("dynsc", {}))
 
@@ -181,6 +184,90 @@ _BUS_FIELD_MAP = {
     "tags": "tags",
 }
 
+# ---------------------------------------------------------------------------
+# DSL vocabulary translation — bus / main dynamics and EQ
+# ---------------------------------------------------------------------------
+
+_BUS_DYN_DSL_MAP = {
+    "model": "mdl",
+    "threshold": "thr",
+    "attack": "att",
+    "release": "rel",
+}
+
+_MAIN_DYN_DSL_MAP = {
+    "model": "mdl",
+    "input": "in",
+    "output": "out",
+    "attack": "att",
+    "release": "rel",
+}
+
+
+def _translate_bus_dyn(dyn_config: dict) -> dict:
+    """Translate DSL dynamics vocabulary to Wing field names for buses.
+
+    Also handles Wing string-encoding artifacts:
+    - SBUS stores rel as a string (e.g. "0.4", not 0.4)
+    """
+    model = dyn_config.get("model") or dyn_config.get("mdl")
+    result = {_BUS_DYN_DSL_MAP.get(k, k): v for k, v in dyn_config.items()}
+    if model == "SBUS" and "rel" in result:
+        result["rel"] = str(result["rel"])
+    return result
+
+
+def _translate_main_dyn(dyn_config: dict) -> dict:
+    """Translate DSL dynamics vocabulary to Wing field names for main outputs.
+
+    Also handles Wing string-encoding artifacts:
+    - 76LA stores ratio as a string (e.g. "20", not 20)
+    """
+    model = dyn_config.get("model") or dyn_config.get("mdl")
+    result = {_MAIN_DYN_DSL_MAP.get(k, k): v for k, v in dyn_config.items()}
+    if model == "76LA" and "ratio" in result:
+        result["ratio"] = str(int(result["ratio"]))
+    return result
+
+
+def _translate_infra_eq(eq_config: dict) -> dict:
+    """Translate DSL EQ vocabulary to Wing field names.
+
+    Supports:
+    - bands: {N: {gain, freq, q}} -> {Ng, Nf, Nq}
+    - high_shelf: {gain, freq, q} -> {hg, hf, hq}
+    - low_shelf:  {gain, freq, q} -> {lg, lf, lq}
+    - on, mix, model: passed through unchanged
+    """
+    result: dict = {}
+    for k, v in eq_config.items():
+        if k == "bands" and isinstance(v, dict):
+            for band_num, band in v.items():
+                n = str(band_num)
+                if band.get("gain") is not None:
+                    result[f"{n}g"] = band["gain"]
+                if band.get("freq") is not None:
+                    result[f"{n}f"] = band["freq"]
+                if band.get("q") is not None:
+                    result[f"{n}q"] = band["q"]
+        elif k == "high_shelf" and isinstance(v, dict):
+            if v.get("gain") is not None:
+                result["hg"] = v["gain"]
+            if v.get("freq") is not None:
+                result["hf"] = v["freq"]
+            if v.get("q") is not None:
+                result["hq"] = v["q"]
+        elif k == "low_shelf" and isinstance(v, dict):
+            if v.get("gain") is not None:
+                result["lg"] = v["gain"]
+            if v.get("freq") is not None:
+                result["lf"] = v["freq"]
+            if v.get("q") is not None:
+                result["lq"] = v["q"]
+        else:
+            result[k] = v
+    return result
+
 
 def _apply_bus_dynamics(bus: dict, dyn_config: dict) -> None:
     """Apply dynamics config to a bus dict.
@@ -188,7 +275,8 @@ def _apply_bus_dynamics(bus: dict, dyn_config: dict) -> None:
     When switching to SBUS, also patches dynsc.q to sqrt2 — Wing applies this
     when configuring a bus with SBUS dynamics.
     """
-    model = dyn_config.get("mdl")
+    translated = _translate_bus_dyn(dyn_config)
+    model = translated.get("mdl")
     if model is None:
         return
     if model != bus.get("dyn", {}).get("mdl"):
@@ -198,7 +286,7 @@ def _apply_bus_dynamics(bus: dict, dyn_config: dict) -> None:
             # SBUS configuration also updates dynsc.q to sqrt2 — Wing does this
             # when you configure a bus with SBUS dynamics
             bus.setdefault("dynsc", {})["q"] = _DYNSC_Q_PATCHED
-    bus["dyn"].update(dyn_config)
+    bus["dyn"].update(translated)
 
 
 def _apply_bus_inserts(bus: dict, preins: dict | None, postins: dict | None) -> None:
@@ -220,7 +308,7 @@ def _apply_buses(ae: dict, buses_config: dict) -> None:
         if "dyn" in bus_cfg:
             _apply_bus_dynamics(bus, bus_cfg["dyn"])
         if "eq" in bus_cfg:
-            bus["eq"].update(bus_cfg["eq"])
+            bus["eq"].update(_translate_infra_eq(bus_cfg["eq"]))
         if "dynsc" in bus_cfg:
             bus.setdefault("dynsc", {}).update(bus_cfg["dynsc"])
         if "preins" in bus_cfg:
@@ -237,12 +325,13 @@ def _apply_buses(ae: dict, buses_config: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def _apply_main_dynamics(main: dict, dyn_config: dict) -> None:
-    model = dyn_config.get("mdl")
+    translated = _translate_main_dyn(dyn_config)
+    model = translated.get("mdl")
     if model is None:
         return
     if model != main.get("dyn", {}).get("mdl"):
         main["dyn"] = {"mdl": model, "mix": 100}
-    main["dyn"].update(dyn_config)
+    main["dyn"].update(translated)
 
 
 def _apply_mains(ae: dict, mains_config: dict) -> None:
@@ -258,7 +347,7 @@ def _apply_mains(ae: dict, mains_config: dict) -> None:
             _apply_main_dynamics(main, out_cfg["dyn"])
 
         if "eq" in out_cfg:
-            main["eq"].update(out_cfg["eq"])
+            main["eq"].update(_translate_infra_eq(out_cfg["eq"]))
 
         if "in" in out_cfg:
             _deep_update(main["in"], out_cfg["in"])
