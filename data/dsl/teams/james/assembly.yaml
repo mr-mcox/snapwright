@@ -144,6 +144,10 @@ musicians:
       - musicians/headset.yaml
     mute: false   # spare mic, unmuted on this team
 
+  piano:
+    inherits:
+      - musicians/piano.yaml
+
 # ---------------------------------------------------------------------------
 # Physical layout — where they sit on the desk
 # ---------------------------------------------------------------------------
@@ -170,6 +174,7 @@ channels:
   # Spares
   37: handheld
   38: headset
+  15: piano
 
 inputs:
   kick:          2
@@ -189,6 +194,7 @@ inputs:
   yolaine-vox:   13
   handheld:      32
   headset:       31
+  piano:         1
 
 buses:
   1:  drums
@@ -263,3 +269,21 @@ monitors:
     yolaine-vox:   -16.11
     handheld:      -12.30
     headset:       -29.98
+
+# ---------------------------------------------------------------------------
+# Personal mixer (P16) — A.33-A.48
+# Slot label → [musicians]. Tap points and slot positions in infrastructure.yaml.
+# Omit a label to leave that slot OFF.
+# ---------------------------------------------------------------------------
+personal_mixer:
+  Bass:       [bass]
+  Drum Set:   [kick, snare, tom, overhead]
+  Lead 1:     [priscilla-vox]
+  Lead 2:     [james-vox]
+  Back Vox:   [anna-vox, yolaine-vox]
+  Piano:      [piano]
+  Guitars:    [james-guitar, violin]
+  Other Inst: [flute]
+  Wireless:   [handheld, headset]
+  # Congas: omitted — no conga players on P16 this week
+  # Keys: omitted — no keys player on James team

@@ -227,6 +227,11 @@ class AssemblyDef(BaseModel):
     monitors: dict[
         str, dict[str, float]
     ]  # monitor name → {musician: additive-dB offset}
+    personal_mixer: dict[str, list[str]] | None = None
+    # slot-label → [musician, ...]
+    # Tap points and slot positions defined in infrastructure.yaml.
+    # Omit a slot label to leave it OFF. Individual slots: list must have
+    # exactly 0 or 1 musician (validated by the renderer).
 
     @field_validator("inputs", mode="before")
     @classmethod

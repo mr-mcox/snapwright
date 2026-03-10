@@ -632,3 +632,25 @@ channels:
       14: { mode: PRE,  plink: false }
       15: { mode: PRE,  plink: false }
       16: { mode: PRE,  plink: false }
+
+# ===========================================================================
+# Personal mixer (P16) — slot topology
+# Keyed by slot number (1–16 = A.33–A.48). Absent slots are implicit OFF.
+# MX numbers assigned in ascending slot order across group slots.
+# USR numbers assigned in ascending slot order across individual slots.
+# Tap points (PRE/POST) defined here — not in assembly.
+# ===========================================================================
+personal_mixer:
+  slots:
+    1:  { label: Bass,       type: individual, tap: PRE  }
+    2:  { label: Drum Set,   type: group }
+    3:  { label: Congas,     type: group }
+    5:  { label: Lead 1,     type: individual, tap: POST }
+    6:  { label: Lead 2,     type: individual, tap: POST }
+    7:  { label: Back Vox,   type: group }
+    9:  { label: Piano,      type: individual, tap: PRE  }
+    10: { label: Keys,       type: individual, tap: PRE  }
+    11: { label: Guitars,    type: group }
+    12: { label: Other Inst, type: group }
+    15: { label: Wireless,   type: group }
+    16: { label: Drums Mon,  type: monitor,    bus: monitor_4 }

@@ -20,7 +20,7 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from snapwright.dsl.infrastructure import patch_channel_firmware
+from snapwright.dsl.infrastructure import get_p16_slots, patch_channel_firmware
 from snapwright.dsl.loader import load_assembly, resolve_musician
 from snapwright.dsl.schema import AssemblyDef
 from snapwright.wing.defaults import channel_defaults, snap_template
@@ -96,6 +96,7 @@ def render_assembly(
     if output_path is not None:
         save_snap(snap, output_path)
 
+
     return snap
 
 
@@ -159,6 +160,14 @@ def _render(assembly: AssemblyDef, dsl_root: Path) -> dict:
                 send["lvl"] = offset  # no default: treat as absolute
                 send["on"] = True
                 send["mode"] = "PRE"
+
+    # Apply personal mixer assembly (MX sends + USR channel assignments)
+    if assembly.personal_mixer is not None:
+        import yaml as _yaml
+        _infra_path = Path(__file__).parent.parent.parent / "data" / "dsl" / "infrastructure.yaml"
+        _infra = _yaml.safe_load(_infra_path.read_text())
+        _slots = get_p16_slots(_infra)
+        _apply_personal_mixer_assembly(snap, assembly, musician_to_ch, _slots)
 
     return snap
 
@@ -454,3 +463,83 @@ def _apply_sends(
         sends[bus_key]["lvl"] = level
         sends[bus_key]["mode"] = "PRE" if is_monitor else "POST"
     ch["send"] = sends
+
+
+# ---------------------------------------------------------------------------
+# Personal mixer assembly rendering
+# ---------------------------------------------------------------------------
+
+
+def _apply_personal_mixer_assembly(
+    snap: dict,
+    assembly: AssemblyDef,
+    musician_to_ch: dict[str, int],
+    slots: list[dict],
+) -> None:
+    """Write MX channel sends (groups) and USR source assignments (individuals).
+    assembly.personal_mixer is a flat dict: slot-label → [musician, ...].
+    Tap points come from the slot definition in infrastructure (already parsed
+    into `slots`). Infrastructure has already written matrix names and io.out.
+    """
+    ae = snap["ae_data"]
+    pm = assembly.personal_mixer or {}
+    for s in slots:
+        if s["type"] == "group":
+            _apply_group_slot(ae, pm, musician_to_ch, s)
+        elif s["type"] == "individual":
+            _apply_individual_slot(ae, pm, musician_to_ch, s)
+        # monitor and off slots: fully handled by infrastructure
+
+
+def _apply_group_slot(
+    ae: dict,
+    pm: dict[str, list[str]],
+    musician_to_ch: dict[str, int],
+    slot: dict,
+) -> None:
+    """Write send.MX{n} on each musician channel assigned to this group slot."""
+    label = slot["label"]
+    mx_key = f"MX{slot['mx_num']}"
+    musicians = pm.get(label) or []
+    for musician_name in musicians:
+        ch_num = musician_to_ch.get(musician_name)
+        if ch_num is None:
+            continue  # musician not on this team
+        send = ae["ch"][str(ch_num)]["send"][mx_key]
+        send["on"] = True
+        send["lvl"] = 0.0
+        # mode=PRE, plink=True already set by _apply_sends default
+
+
+def _apply_individual_slot(
+    ae: dict,
+    pm: dict[str, list[str]],
+    musician_to_ch: dict[str, int],
+    slot: dict,
+) -> None:
+    """Write USR source channel assignment for this individual slot.
+
+    Raises ValueError if the musician list has more than one entry.
+    """
+    label = slot["label"]
+    usr_key = str(slot["usr_num"])
+    musicians = pm.get(label) or []
+
+    if len(musicians) > 1:
+        raise ValueError(
+            f"P16 individual slot {label!r} has {len(musicians)} musicians "
+            f"{musicians!r}; individual slots take exactly 0 or 1."
+        )
+    usr = ae["io"]["in"]["USR"][usr_key]
+    if not musicians:
+        return  # stays OFF — label already written by infrastructure
+
+    ch_num = musician_to_ch.get(musicians[0])
+    if ch_num is None:
+        return  # musician not on this team
+    usr["user"] = {
+        "grp": "CH",
+        "in": ch_num,
+        "tap": slot["tap"],
+        "lr": "L+R",
+    }
