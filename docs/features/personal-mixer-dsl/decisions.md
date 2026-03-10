@@ -3,8 +3,8 @@
 ### 2026-03-09 — MX numbering follows P16 slot order, not historical console numbering
 
 **Context**: The reference snap uses Back Vox=MX1, Guitars=MX2, etc. (historical ordering).
-Strict "ordering determines numbering" (slot 2=Drum Set becomes MX1) produces different
-MTX.in values in io.out. The diff harness currently masks A.33-A.48 entirely.
+Slot-order assignment gives Drum Set=MX1 (slot 2, first group). These differ, meaning
+MTX.in values in io.out won't match the reference.
 
 **Choice**: Ordering-based numbering. MX1=Drum Set, MX2=Congas, MX3=Back Vox, MX4=Guitars,
 MX5=Other Inst, MX6=Wireless. Diff harness stays masked for A.33-A.48 (the personal mixer
@@ -16,7 +16,7 @@ declaration order. Ordering-based numbering is simpler and self-documenting.
 
 ---
 
-### 2026-03-09 — infrastructure.py reads infrastructure.yaml; renderer re-reads for slot topology
+### 2026-03-09 — Renderer re-reads infrastructure.yaml for slot topology
 
 **Context**: The assembly renderer needs the P16 slot topology (derived MX/USR numbers)
 to write sends and USR sources. Two options: (a) pass topology through snap_template(),
@@ -31,23 +31,25 @@ the infrastructure YAML can be cached at module load time.
 
 ---
 
-### 2026-03-09 — Congas group empty for James team; empty group is valid
+### 2026-03-09 — Empty group is valid; omitting a label leaves the slot silent
 
-**Context**: James's assembly declares `Congas:` with no musicians. No channels
-send to MX2. The matrix (MX2) still gets its name and 0 dB fader from infrastructure.
+**Context**: James has no conga players on the P16. With the flat assembly structure,
+Congas is simply absent from the dict rather than declared with an empty body.
 
-**Choice**: Empty group is valid. Infrastructure always creates the matrix; assembly
-assigns members. A team with no congas simply has a silent MX2 slot on the P16.
+**Choice**: Omitting a group label from the assembly dict is valid — the matrix still
+gets its name and 0 dB fader from infrastructure, but no channels send to it. A team
+with no congas simply has a silent MX2 slot on the P16.
 
 ---
 
-### 2026-03-09 — Keys slot rendered as USR grp=OFF when musician is null
+### 2026-03-09 — Omitting an individual label leaves USR OFF; no null syntax needed
 
-**Context**: James has no keys player. Assembly declares `musician: null`. The "Keys"
-label is still written to USR.5 by infrastructure; assembly leaves user.grp=OFF.
+**Context**: James has no keys player. Initial design used `musician: null` (YAML null)
+to express an unassigned slot. With the flat list syntax the null case doesn't arise
+— you simply omit the label.
 
-**Choice**: Null musician → OFF source. Label is preserved infrastructure-side so
-the P16 hardware strip still shows "Keys" even when unassigned.
+**Choice**: Omit Keys from the assembly dict. Infrastructure still writes "Keys" to
+USR.5.name; renderer leaves user.grp=OFF. The P16 hardware strip still shows "Keys".
 
 ---
 
@@ -58,5 +60,5 @@ assembly. Confirmed: grand piano permanently on stage, always on A.1. The mute
 and low fader in the december reference snap were session decisions, not DSL defaults.
 
 **Choice**: Piano added to James musicians (inherits musicians/piano.yaml), ch15,
-input A.1. Personal mixer individual slot wired: `musician: piano, tap: PRE`.
-DSL default fader is musicians/piano.yaml default (0 dB); operator adjusts live.
+input A.1. Personal mixer: `Piano: [piano]`. DSL renders ch15 as a normal active
+channel; operator mutes on the night if needed.
