@@ -156,18 +156,31 @@ retained as a historical reference but is no longer used in rendering.
 
 ---
 
-## Suggested Starting Order
+## Beta-Blockers (Sunday Service Target)
 
-1. **`priscilla-spelling`** — 5 minutes, ship it
-2. **`infrastructure-dsl`** — the foundation. Design the YAML format, switch renderer from Base.snap to Init.snap + infrastructure layer
-3. **`bus-rendering`**, **`tags-ownership`**, **`infra-channels`** — can run in parallel after infrastructure-dsl
+Six features required before the first live Sunday beta. All depend on `infrastructure-dsl`
+being complete (it is — status: compacting).
+
+| Feature | What | Critical gap |
+|---|---|---|
+| `bus-rendering` | Bus names, colors, faders + main output faders | Everything at -144 = silence |
+| `stage-box-labels` | `io.in.A` names, icons, preamp gains | No channel labels visible; wrong input levels |
+| `stream-output-routing` | `io.out.AUX`, `io.out.USB` routing | Streaming dead on load |
+| `control-surface` | `ce_data.layer` custom controls, User 1 layer | Volunteer monitor workflow broken |
+| `value-normalization` | Quantize DSL source files to clean starting point | Noise obscures evolution signal |
+| `coverage-report` | `snapwright coverage` CLI + `docs/coverage.md` | No visibility into what's modeled |
+
+All briefs at `docs/features/<name>/brief.md`.
+
+## Suggested Starting Order (original, pre-beta)
+
+1. ~~**`priscilla-spelling`**~~ — done
+2. ~~**`infrastructure-dsl`**~~ — done
+3. **`bus-rendering`**, **`tags-ownership`**, **`infra-channels`** — can run in parallel
 4. **`dca-mgrp-rendering`** — after Tier 1 lands
 5. **`personal-mixer-routing`** — after infrastructure-dsl + infra-channels
 6. **`strategy-overlays`** — after dca-mgrp-rendering
 7. **`user-layers`** — after dca-mgrp-rendering + strategy-overlays
-
-Items 3 are good candidates for parallel sessions.
-Items 5-7 are the meaty design work and benefit from the foundation being solid first.
 
 ---
 

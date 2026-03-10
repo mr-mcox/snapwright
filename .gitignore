@@ -9,3 +9,4 @@ data/dsl/teams/james/james-team.snap
 .env
 evolution-report*.md
 evolution-james-report.md
+output/
