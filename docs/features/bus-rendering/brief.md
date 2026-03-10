@@ -30,6 +30,7 @@ passes through from Init.snap unchanged.
 - Display names are explicit in the DSL — no automatic derivation from logical names
 - Renderer writes `name`, `col`, `fdr`, `mute`, and dynamics to `ae_data.bus[N]`; `fdr` to `ae_data.main[N]`
 - TDD — bus and main fader rendering are new renderer sections with their own test coverage
+- The integration diff test (`test_phase1_render.py`) must be widened to include `ae_data.bus` and `ae_data.main` — a passing diff against the James reference is the acceptance criterion for correctness
 
 ## Escalation Triggers
 

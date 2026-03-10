@@ -28,6 +28,7 @@ of what's dialed into channel processing.
 - Renderer writes `name`, `icon`, `g` to `io.in.A[slot]` for each musician in the assembly's `inputs:` map
 - Slots not in the assembly keep Init.snap defaults (blank name, 0 gain) — no fabrication
 - TDD — slot label and gain writing are pure functions of the assembled musician map
+- The integration diff test must be widened to include `io.in.A` slots covered by the assembly — a passing diff against the James reference is the acceptance criterion for correctness
 
 ## Escalation Triggers
 

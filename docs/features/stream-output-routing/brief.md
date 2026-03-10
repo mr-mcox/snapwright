@@ -24,6 +24,7 @@ these routed to specific buses; the Init.snap defaults leave them unassigned.
 - The reference James.snap is the source of truth for what the correct routing should be
 - Renderer writes `io.out.AUX` and `io.out.USB` routing from infrastructure
 - Related `ae_data.aux` config (aux channel names, colors, send modes) is in scope if needed to make stream outputs functional on load
+- The integration diff test must be widened to include `io.out.AUX`, `io.out.USB`, and any `ae_data.aux` config written — a passing diff against the James reference is the acceptance criterion
 - TDD
 
 ## Escalation Triggers

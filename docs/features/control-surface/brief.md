@@ -31,6 +31,7 @@ The right-surface User 1 layer is also absent.
   or regenerate the layout from first principles
 - The existing reference snapshot is the source of truth; no layout redesign in this feature
 - Renderer writes `ce_data.layer` and `ce_data.user` from infrastructure
+- The integration diff test must be widened to include `ce_data.layer` and `ce_data.user` — a passing diff against the James reference is the acceptance criterion for correctness
 
 ## Escalation Triggers
 
