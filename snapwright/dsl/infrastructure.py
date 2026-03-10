@@ -39,7 +39,9 @@ _DYNSC_Q_INIT = 1.995881796
 
 def _patch_eq_q(eq: dict, patch_hq: bool = False) -> None:
     """Replace Init.snap default EQ Q values with current-firmware defaults.
-    By default skips hq (high-shelf Q): real-world bus/main snapshots keep hq=0.997970223.
+    By default skips hq (high-shelf Q): real-world bus/main snapshots keep
+    hq=0.997970223. Pass patch_hq=True for channels, where Wing DOES update
+    hq on configure.
     Pass patch_hq=True for channels, where Wing DOES update hq on configure.
     """
     for k, v in eq.items():
@@ -76,7 +78,8 @@ def apply_firmware_patches(snap: dict) -> None:
         _patch_eq_q(main.get("eq", {}))
         _patch_dynsc_q(main.get("dynsc", {}))
 
-    # cfg.mon monitoring EQ — uses 1.995881796 as init Q (same as dynsc), not 0.997970223
+    # cfg.mon monitoring EQ — uses 1.995881796 as init Q (same as dynsc),
+    # not 0.997970223
     _CFG_MON_Q_INIT = 1.995881796
     for mon in ae.get("cfg", {}).get("mon", {}).values():
         mon_eq = mon.get("eq", {})
@@ -119,9 +122,8 @@ def _normalize_yaml_keys(obj: Any) -> Any:
                 k = "on"
             elif k is False:
                 k = "off"
-            result[str(k) if isinstance(k, (int, float)) and not isinstance(k, bool) else k] = (
-                _normalize_yaml_keys(v)
-            )
+            is_int_key = isinstance(k, (int, float)) and not isinstance(k, bool)
+            result[str(k) if is_int_key else k] = _normalize_yaml_keys(v)
         return result
     elif isinstance(obj, list):
         return [_normalize_yaml_keys(i) for i in obj]
@@ -229,11 +231,18 @@ def _translate_main_dyn(dyn_config: dict) -> dict:
         result["ratio"] = str(int(result["ratio"]))
     return result
 
+def _apply_infra_eq_shelf(result: dict, shelf: dict, prefix: str) -> None:
+    """Write a DSL shelf dict {gain, freq, q} into result with Wing prefix."""
+    if shelf.get("gain") is not None:
+        result[f"{prefix}g"] = shelf["gain"]
+    if shelf.get("freq") is not None:
+        result[f"{prefix}f"] = shelf["freq"]
+    if shelf.get("q") is not None:
+        result[f"{prefix}q"] = shelf["q"]
+
 
 def _translate_infra_eq(eq_config: dict) -> dict:
     """Translate DSL EQ vocabulary to Wing field names.
-
-    Supports:
     - bands: {N: {gain, freq, q}} -> {Ng, Nf, Nq}
     - high_shelf: {gain, freq, q} -> {hg, hf, hq}
     - low_shelf:  {gain, freq, q} -> {lg, lf, lq}
@@ -251,23 +260,12 @@ def _translate_infra_eq(eq_config: dict) -> dict:
                 if band.get("q") is not None:
                     result[f"{n}q"] = band["q"]
         elif k == "high_shelf" and isinstance(v, dict):
-            if v.get("gain") is not None:
-                result["hg"] = v["gain"]
-            if v.get("freq") is not None:
-                result["hf"] = v["freq"]
-            if v.get("q") is not None:
-                result["hq"] = v["q"]
+            _apply_infra_eq_shelf(result, v, "h")
         elif k == "low_shelf" and isinstance(v, dict):
-            if v.get("gain") is not None:
-                result["lg"] = v["gain"]
-            if v.get("freq") is not None:
-                result["lf"] = v["freq"]
-            if v.get("q") is not None:
-                result["lq"] = v["q"]
+            _apply_infra_eq_shelf(result, v, "l")
         else:
             result[k] = v
     return result
-
 
 def _apply_bus_dynamics(bus: dict, dyn_config: dict) -> None:
     """Apply dynamics config to a bus dict.
@@ -296,29 +294,28 @@ def _apply_bus_inserts(bus: dict, preins: dict | None, postins: dict | None) -> 
         bus["postins"].update(postins)
 
 
+def _apply_single_bus(bus: dict, bus_cfg: dict) -> None:
+    for yaml_key, snap_key in _BUS_FIELD_MAP.items():
+        if yaml_key in bus_cfg:
+            bus[snap_key] = bus_cfg[yaml_key]
+    if "dyn" in bus_cfg:
+        _apply_bus_dynamics(bus, bus_cfg["dyn"])
+    if "eq" in bus_cfg:
+        bus["eq"].update(_translate_infra_eq(bus_cfg["eq"]))
+    if "dynsc" in bus_cfg:
+        bus.setdefault("dynsc", {}).update(bus_cfg["dynsc"])
+    if "preins" in bus_cfg:
+        bus["preins"].update(bus_cfg["preins"])
+    if "postins" in bus_cfg:
+        bus["postins"].update(bus_cfg["postins"])
+    if "main" in bus_cfg:
+        for out_key, out_cfg in bus_cfg["main"].items():
+            bus["main"][str(out_key)].update(out_cfg)
+
+
 def _apply_buses(ae: dict, buses_config: dict) -> None:
     for bus_str, bus_cfg in buses_config.items():
-        bus_key = str(bus_str)
-        bus = ae["bus"][bus_key]
-
-        for yaml_key, snap_key in _BUS_FIELD_MAP.items():
-            if yaml_key in bus_cfg:
-                bus[snap_key] = bus_cfg[yaml_key]
-
-        if "dyn" in bus_cfg:
-            _apply_bus_dynamics(bus, bus_cfg["dyn"])
-        if "eq" in bus_cfg:
-            bus["eq"].update(_translate_infra_eq(bus_cfg["eq"]))
-        if "dynsc" in bus_cfg:
-            bus.setdefault("dynsc", {}).update(bus_cfg["dynsc"])
-        if "preins" in bus_cfg:
-            bus["preins"].update(bus_cfg["preins"])
-        if "postins" in bus_cfg:
-            bus["postins"].update(bus_cfg["postins"])
-        if "main" in bus_cfg:
-            for out_key, out_cfg in bus_cfg["main"].items():
-                bus["main"][str(out_key)].update(out_cfg)
-
+        _apply_single_bus(ae["bus"][str(bus_str)], bus_cfg)
 
 # ---------------------------------------------------------------------------
 # Main outputs
@@ -414,9 +411,15 @@ _INFRA_CH_SEND_MIX_KEYS = [str(i) for i in range(1, 13)]   # buses 1-12: POST
 _INFRA_CH_SEND_MON_KEYS = [str(i) for i in range(13, 17)]  # buses 13-16: PRE
 _INFRA_CH_SEND_MX_KEYS = [f"MX{i}" for i in range(1, 9)]  # personal: PRE + plink
 
-_SEND_OFF_POST = {"on": False, "lvl": -144.0, "pon": False, "mode": "POST", "plink": False, "pan": 0}
-_SEND_OFF_PRE = {"on": False, "lvl": -144.0, "pon": False, "mode": "PRE", "plink": False, "pan": 0}
-_SEND_OFF_MX = {"on": False, "lvl": -144.0, "pon": False, "mode": "PRE", "plink": True, "pan": 0}
+_SEND_OFF_POST = {
+    "on": False, "lvl": -144.0, "pon": False, "mode": "POST", "plink": False, "pan": 0
+}
+_SEND_OFF_PRE = {
+    "on": False, "lvl": -144.0, "pon": False, "mode": "PRE", "plink": False, "pan": 0
+}
+_SEND_OFF_MX = {
+    "on": False, "lvl": -144.0, "pon": False, "mode": "PRE", "plink": True, "pan": 0
+}
 
 
 def _build_infra_channel_sends(sends_cfg: dict) -> dict:
@@ -450,59 +453,45 @@ def _build_infra_channel_sends(sends_cfg: dict) -> dict:
     return sends
 
 
+_CH_SCALAR_KEYS = ("name", "col", "icon", "mute", "fdr", "led", "clink")
+
+
+def _apply_channel_identity(ch: dict, ch_cfg: dict) -> None:
+    for key in _CH_SCALAR_KEYS:
+        if key in ch_cfg:
+            ch[key] = ch_cfg[key]
+    if "ptap" in ch_cfg:
+        ch["ptap"] = str(ch_cfg["ptap"])
+    if "in" in ch_cfg:
+        _deep_update(ch["in"], ch_cfg["in"])
+
+
+def _apply_channel_processing(ch: dict, ch_cfg: dict) -> None:
+    if "eq" in ch_cfg:
+        ch["eq"].update(ch_cfg["eq"])
+    if "dyn" in ch_cfg:
+        ch["dyn"].update(ch_cfg["dyn"])
+    if "gate" in ch_cfg:
+        ch["gate"].update(ch_cfg["gate"])
+    if "flt" in ch_cfg:
+        ch["flt"].update(ch_cfg["flt"])
+    if "preins" in ch_cfg:
+        ch["preins"].update(ch_cfg["preins"])
+    if "postins" in ch_cfg:
+        ch["postins"].update(ch_cfg["postins"])
+
+
 def _apply_channels(ae: dict, channels_config: dict) -> None:
     """Apply infrastructure channel configs (ch37-40)."""
     for ch_str, ch_cfg in channels_config.items():
-        ch_key = str(ch_str)
-        ch = ae["ch"][ch_key]
-
-        # Identity
-        if "name" in ch_cfg:
-            ch["name"] = ch_cfg["name"]
-        if "col" in ch_cfg:
-            ch["col"] = ch_cfg["col"]
-        if "icon" in ch_cfg:
-            ch["icon"] = ch_cfg["icon"]
-        if "mute" in ch_cfg:
-            ch["mute"] = ch_cfg["mute"]
-        if "fdr" in ch_cfg:
-            ch["fdr"] = ch_cfg["fdr"]
-        if "led" in ch_cfg:
-            ch["led"] = ch_cfg["led"]
-        if "clink" in ch_cfg:
-            ch["clink"] = ch_cfg["clink"]
-        if "ptap" in ch_cfg:
-            ch["ptap"] = str(ch_cfg["ptap"])
-
-        # Input routing
-        if "in" in ch_cfg:
-            _deep_update(ch["in"], ch_cfg["in"])
-
-        # Processing
-        if "eq" in ch_cfg:
-            ch["eq"].update(ch_cfg["eq"])
-        if "dyn" in ch_cfg:
-            ch["dyn"].update(ch_cfg["dyn"])
-        if "gate" in ch_cfg:
-            ch["gate"].update(ch_cfg["gate"])
-        if "flt" in ch_cfg:
-            ch["flt"].update(ch_cfg["flt"])
-
-        # Inserts
-        if "preins" in ch_cfg:
-            ch["preins"].update(ch_cfg["preins"])
-        if "postins" in ch_cfg:
-            ch["postins"].update(ch_cfg["postins"])
-
-        # Main routing
+        ch = ae["ch"][str(ch_str)]
+        _apply_channel_identity(ch, ch_cfg)
+        _apply_channel_processing(ch, ch_cfg)
         if "main" in ch_cfg:
             for out_key, out_cfg in ch_cfg["main"].items():
                 ch["main"][str(out_key)].update(out_cfg)
-
-        # Sends — build complete send dict
         if "send" in ch_cfg:
             ch["send"] = _build_infra_channel_sends(ch_cfg["send"])
-
 
 # ---------------------------------------------------------------------------
 # Helpers

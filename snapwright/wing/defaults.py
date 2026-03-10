@@ -12,8 +12,9 @@ Note: Init.snap predates the `tapwid` param. We add it with value 100
 import copy
 from functools import cache
 from pathlib import Path
-from snapwright.wing.parser import load_snap
+
 from snapwright.dsl.infrastructure import apply_firmware_patches, apply_infrastructure
+from snapwright.wing.parser import load_snap
 
 _INIT_SNAP_PATH = (
     Path(__file__).parent.parent.parent / "data" / "reference" / "Init.snap"

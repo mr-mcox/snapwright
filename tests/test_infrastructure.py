@@ -5,9 +5,7 @@ must provide. The integration diff against james-2025-12-14.snap is what
 drives *what* to test; these unit tests are the *contract*.
 """
 
-from pathlib import Path
 
-import pytest
 
 from snapwright.wing.defaults import snap_template
 
@@ -46,7 +44,8 @@ def _all_ch_eq_q(snap: dict) -> set[float]:
 
 
 class TestFirmwarePatch:
-    """snap_template() must apply firmware-level corrections beyond Init.snap defaults."""
+    """snap_template() must apply firmware-level corrections
+    beyond Init.snap defaults."""
 
     def test_bus_eq_q_patched_to_sqrt2(self):
         """Bus EQ Q values (lq, 1q-6q) should be patched to sqrt2 on configured buses.
@@ -60,7 +59,8 @@ class TestFirmwarePatch:
         for bus_num in ["1", "2", "6", "9", "13", "16"]:
             bus_eq = snap["ae_data"]["bus"][bus_num]["eq"]
             for k, v in bus_eq.items():
-                if k in ("lq", "1q", "2q", "3q", "4q", "5q", "6q") and isinstance(v, float):
+                _parametric = ("lq", "1q", "2q", "3q", "4q", "5q", "6q")
+                if k in _parametric and isinstance(v, float):
                     assert abs(v - _PATCHED_Q) < 0.01, (
                         f"bus.{bus_num}.eq.{k}={v}, expected ~{_PATCHED_Q}"
                     )
@@ -74,7 +74,8 @@ class TestFirmwarePatch:
                 )
 
     def test_main_eq_q_patched(self):
-        """main.3 parametric EQ Q (no infrastructure EQ config) should be patched to sqrt2.
+        """main.3 parametric EQ Q (no infrastructure EQ config) should be
+        patched to sqrt2.
 
         hq (high-shelf Q) is never patched. main.1 has a fully configured EQ via
         infrastructure.yaml with deliberate per-band Q values; not tested here.
@@ -207,7 +208,8 @@ class TestInfrastructureBuses:
     """Bus names, dynamics model, and routing must come from infrastructure.yaml."""
 
     def test_bus_led_false(self):
-        """Configured buses should have led=False. Bus 8 is unconfigured, keeps led=True."""
+        """Configured buses should have led=False.
+        Bus 8 is unconfigured, keeps led=True."""
         snap = snap_template()
         for i in range(1, 13):
             if i == 8:
@@ -308,7 +310,9 @@ class TestInfrastructureCfg:
         for mon_key in ("1", "2"):
             mon = snap["ae_data"]["cfg"]["mon"][mon_key]
             assert mon["dim"] == 0, f"cfg.mon.{mon_key}.dim={mon['dim']}, expected 0"
-            assert mon["pfldim"] == 0, f"cfg.mon.{mon_key}.pfldim={mon['pfldim']}, expected 0"
+            assert mon["pfldim"] == 0, (
+                f"cfg.mon.{mon_key}.pfldim={mon['pfldim']}, expected 0"
+            )
 
     def test_mon1_src_main2(self):
         """cfg.mon.1 source should be MAIN.2 (headphones monitor stream)."""
