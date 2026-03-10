@@ -3,7 +3,7 @@ feature: infrastructure-dsl
 date: 2026-03-08
 commit: 6578c39
 branch: infrastructure-dsl
-status: implementing
+status: compacting
 read-when: "starting or resuming implementation of Init.snap + infrastructure.yaml"
 ---
 
