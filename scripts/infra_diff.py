@@ -50,7 +50,7 @@ _SESSION_MONITOR_BUSES = {"13", "14", "15", "16"}
 _FLOAT_TOL = 0.1
 
 # Focus sections (what the brief cares about)
-_FOCUS_SECTIONS = {"fx", "bus", "main", "ch", "dca", "mgrp", "cfg"}
+_FOCUS_SECTIONS = {"fx", "bus", "main", "ch", "dca", "mgrp", "cfg", "io"}
 
 # ---------------------------------------------------------------------------
 # Diff helpers
@@ -210,6 +210,44 @@ def diff_cfg(rendered_snap: dict, ref_snap: dict) -> list[str]:
     return _diff_dict(rendered, reference, "cfg")
 
 
+def diff_io(rendered_snap: dict, ref_snap: dict) -> list[str]:
+    """Diff ae_data.io.out (physical output routing).
+
+    Masking rules:
+    - io.in: entirely masked (team-specific input labels and preamp gains)
+    - io.out.LCL: masked (Init.snap defaults left in place; vestigial in reference)
+    - io.out.CRD, io.out.USB: masked (main.3/4 outputs, not in use)
+    - io.out.AUX.1/.2: masked (main.3 stereo outputs, not in use)
+    - io.out.A.7 and A.33-48: masked (personal mixer, deferred to personal-mixer-dsl)
+    """
+    import copy
+    rendered_io = rendered_snap["ae_data"].get("io", {})
+    ref_io = ref_snap["ae_data"].get("io", {})
+
+    rendered_out = copy.deepcopy(rendered_io.get("out", {}))
+    ref_out = copy.deepcopy(ref_io.get("out", {}))
+
+    # Mask LCL entirely
+    rendered_out.pop("LCL", None)
+    ref_out.pop("LCL", None)
+    # Mask CRD and USB entirely (main.3/4 outputs, not in use)
+    for out in (rendered_out, ref_out):
+        out.pop("CRD", None)
+        out.pop("USB", None)
+
+    # Mask AUX.1 and AUX.2 (main.3 stereo outputs, not in use)
+    for out in (rendered_out, ref_out):
+        aux = out.get("AUX", {})
+        aux.pop("1", None)
+        aux.pop("2", None)
+    # Mask A.7 and A.33-A.48 (personal mixer outputs, deferred to personal-mixer-dsl)
+    for out in (rendered_out, ref_out):
+        a_grp = out.get("A", {})
+        a_grp.pop("7", None)
+        for slot in [str(i) for i in range(33, 49)]:
+            a_grp.pop(slot, None)
+
+    return _diff_dict(rendered_out, ref_out, "io.out")
 _SECTION_FUNCS = {
     "fx": diff_fx,
     "bus": diff_bus,
@@ -218,6 +256,7 @@ _SECTION_FUNCS = {
     "dca": diff_dca,
     "mgrp": diff_mgrp,
     "cfg": diff_cfg,
+    "io": diff_io,
 }
 
 # ---------------------------------------------------------------------------

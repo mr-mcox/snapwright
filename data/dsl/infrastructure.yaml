@@ -371,6 +371,8 @@ buses:
     main:
       1: { on: false }
       2: { on: true, lvl: -144 }    # technically goes to stream but at -144 (off)
+    outputs:
+      A: 3   # stage-box A.3 → Monitor/1
 
   # Bus 14: Monitor/2 — stage monitor mix 2
   14:
@@ -381,6 +383,8 @@ buses:
     main:
       1: { on: false }
       2: { on: true, lvl: -144 }
+    outputs:
+      A: 4   # stage-box A.4 → Monitor/2
 
   # Bus 15: Monitor/3 — stage monitor mix 3
   15:
@@ -391,6 +395,8 @@ buses:
     main:
       1: { on: false }
       2: { on: true, lvl: -144 }
+    outputs:
+      A: 5   # stage-box A.5 → Monitor/3
 
   # Bus 16: Monitor/4 — stage monitor mix 4
   16:
@@ -401,6 +407,8 @@ buses:
     main:
       1: { on: false }
       2: { on: true, lvl: -144 }
+    outputs:
+      A: 6   # stage-box A.6 → Monitor/4
 
 # ===========================================================================
 # Main outputs
@@ -439,6 +447,8 @@ mains:
         trim: -4.5    # trims analog level going in
         bal:  -4.5    # balance/pan trim
     preins: { on: true, ins: FX13 }   # GEQ — deferred (slot assigned, model not set)
+    outputs:
+      A: 1   # stage-box A.1 → HOUSE
 
   # Main.2: STREAM — online broadcast output
   # 76LA limiting, no EQ (flat for stream)
@@ -456,10 +466,22 @@ mains:
       attack: 1.7
       release: 2.0
       ratio: 20
+    outputs:
+      A: 2   # stage-box A.2 → STREAM
 
-  # Main.3: third output — led=false, fdr=-70.1 (fixed, not session)
+  # Main.3: third output — led=false only; AUX/CRD/USB routing not expressed (masked in diff)
   3:
     led: false
+
+# ===========================================================================
+# AUX outputs — hardware labels and structural defaults
+# Send modes (POST for buses 1-12, PRE for 13-16) applied by renderer to all
+# aux channels as a fixed infrastructure patch (see decisions.md).
+# ===========================================================================
+
+aux:
+  1:
+    name: "USB 1/2"   # hardware label — AUX.1 is the Wing's USB audio interface
 
 # ===========================================================================
 # DCA groups — names and starting faders

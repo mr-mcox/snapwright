@@ -3,7 +3,7 @@ feature: infra-output-routing
 date: 2026-03-09
 commit: dfce014
 branch: infrastructure-dsl
-status: solution-space
+status: implementing
 read-when: starting implementation of physical output routing in infrastructure
 ---
 
@@ -13,7 +13,11 @@ read-when: starting implementation of physical output routing in infrastructure
 (which stage-box/local/USB/AUX outputs carry house, stream, and monitor
 signals) exists only in manually-saved snapshots. A render from Init.snap
 produces wrong output routing — nothing reaches the PA or stream. This is
-the most operationally consequential gap in the infrastructure DSL.
+the most operationally consequential gap in the infrastructure DSL. Keeping
+output routing expressed at the `mains:` and `buses:` level (not a separate
+patch-bay section) is also the right abstraction layer — it stays consistent
+with how the DSL will evolve and mirrors how `inputs:` lives alongside
+other concerns in assembly.yaml.
 
 ## Not Doing
 
@@ -26,16 +30,18 @@ the most operationally consequential gap in the infrastructure DSL.
 
 ## Constraints
 
-- `io.out` entries in infrastructure.yaml use Wing-native field names
-  (grp, in) — no DSL translation layer needed; routing values aren't
-  operator-tuned, they're set-once wiring decisions
+- Output connection fields (`out.conn: grp/in`) live inline within `mains:`
+  and `buses:` entries, parallel to how `in.conn` already works on input
+  channels — no separate `io.out` section; Wing-native field names (grp, in)
+  used directly since routing values are set-once wiring decisions, not
+  operator-tuned parameters
 - Firmware Q patches extended to cover `mtx` and `aux` in
   `apply_firmware_patches` — same pattern as buses/mains
 - `aux` structural defaults (all `main.1.on: false`, send modes POST for
   buses 1-12, PRE for 13-16) belong in infrastructure, not team assembly
 - `aux.1.name: "USB 1/2"` is a hardware label — infrastructure
-- Diff harness gains an `io` section; `io.in` entirely masked (team content),
-  A.33-A.48 masked (personal mixer, not yet expressed)
+- Diff harness masks output conn fields within mains/buses for A.33-A.48
+  (personal mixer outputs, not yet expressed)
 
 ## Escalation Triggers
 
