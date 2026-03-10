@@ -1,22 +1,23 @@
-"""Wing defaults derived from Base.snap.
+"""Wing defaults derived from Init.snap (Wing factory reset).
 
-Base.snap is the BCF (Base Configuration File) — the Wing's clean-slate state.
-We use it as the default starting point for any channel we render, so that
-params not expressed in the DSL are filled with known Wing values rather than
-invented ones.
+Init.snap is the Wing's factory-reset state — a clean slate with no
+configuration. We use it as the default starting point for any channel
+we render, so that params not expressed in the DSL are filled with
+known Wing factory values rather than accumulated debris from Base.snap.
 
-Note: Base.snap predates the `tapwid` param. We add it with value 100 (Wing
-default for this firmware version) when it's absent.
+Note: Init.snap predates the `tapwid` param. We add it with value 100
+(Wing default for this firmware version) when it's absent.
 """
 
 import copy
 from functools import cache
 from pathlib import Path
 
+from snapwright.dsl.infrastructure import apply_firmware_patches, apply_infrastructure
 from snapwright.wing.parser import load_snap
 
-_BASE_SNAP_PATH = (
-    Path(__file__).parent.parent.parent / "data" / "reference" / "Base.snap"
+_INIT_SNAP_PATH = (
+    Path(__file__).parent.parent.parent / "data" / "reference" / "Init.snap"
 )
 
 # Wing default for tapwid — observed in all James/Levin/Priscilla snapshots
@@ -25,13 +26,13 @@ _TAPWID_DEFAULT = 100
 
 @cache
 def _load_base() -> dict:
-    return load_snap(_BASE_SNAP_PATH)
+    return load_snap(_INIT_SNAP_PATH)
 
 
 def channel_defaults(number: int) -> dict:
     """Return a deep copy of the default channel state for channel `number`.
-
-    Starts from Base.snap, then patches in any known params that Base predates.
+    Starts from Init.snap (factory reset), then patches in any known params
+    that Init.snap predates.
     """
     base = _load_base()
     ch = copy.deepcopy(base["ae_data"]["ch"][str(number)])
@@ -41,8 +42,13 @@ def channel_defaults(number: int) -> dict:
 
 
 def snap_template() -> dict:
-    """Return a deep copy of Base.snap as a starting point for a full snapshot.
+    """Return a deep copy of Init.snap with firmware patches and infrastructure applied.
 
-    Callers should update ae_data.ch entries and metadata as needed.
+    This is the canonical starting point for all snapshot rendering. It enforces
+    the invariant that every rendered snapshot is based on Init.snap + infrastructure
+    rather than the legacy Base.snap.
     """
-    return copy.deepcopy(_load_base())
+    snap = copy.deepcopy(_load_base())
+    apply_firmware_patches(snap)
+    apply_infrastructure(snap)
+    return snap

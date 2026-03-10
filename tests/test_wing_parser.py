@@ -18,8 +18,8 @@ def test_load_james():
 
 def test_load_base():
     snap = load_snap(BASE)
-    # Base.snap is a BCF file, reports ngc-full not wing
-    assert snap["creator_model"] == "ngc-full"
+    # Base.snap was replaced with Init.snap (Wing factory reset) in infrastructure-dsl
+    assert snap["creator_model"] == "wing"
 
 
 def test_get_channel():

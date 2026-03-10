@@ -2,6 +2,10 @@ name: Headset
 color: 12
 icon: 105
 fader: -2.86
+ptap: 4            # post-insert tap point
+preins: FX11       # DE-S2 de-esser pre-insert (deferred: slot assigned, model not yet set)
+main_2_on: true    # route to stream output
+main_2_lvl: 10     # +10 dB boost for stream (headset level compensation)
 trim: 0
 
 processing:

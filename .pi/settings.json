@@ -6,7 +6,7 @@
     }
   ],
   "compaction": {
-    "reserveTokens": 8192,
+    "reserveTokens": 24576,
     "keepRecentTokens": 10000
   },
   "retry": {

@@ -1,0 +1,612 @@
+# infrastructure.yaml — intentional changes from Wing factory reset (Init.snap)
+#
+# Every entry here is a deliberate infrastructure decision, not team-specific config.
+# This file + Init.snap defines the console's "house baseline" from which all
+# team assemblies are rendered.
+#
+# Vocabulary: most operator-tunable parameters use human-readable DSL names
+# (model, threshold, attack, release, bands, high_shelf, etc.) translated by
+# infrastructure.py. Wing-native field names remain only where translation is
+# deferred (icon numbers, color numbers) or explicitly out of scope (FX preset
+# blobs). See docs/learnings/infra-dsl-vocabulary.md for the full picture.
+
+# ===========================================================================
+# FX slots — bus-wired effects only
+# Channel-insert FX (FX10, FX11, FX13) deferred to follow-on feature
+# ===========================================================================
+
+fx:
+  # FX1: V-PLATE reverb — wired post-insert on bus1 (drums reverb send)
+  1:
+    mdl: V-PLATE
+    fxmix: 5         # low mix — returns via bus1 post-insert, level via bus1 fader
+    pdel: 1
+    dcy: 1
+    lc: 34.29378128
+    col: 8
+
+  # FX2: VSS3 "Church" — long reverb, wired pre-insert on bus11 (Reverb/Long)
+  2:
+    mdl: VSS3
+    fxmix: 100
+    preset: Church
+    load: false
+    erpdly: 73
+    ertype: CHURCH
+    ersize: LRG
+    erpos: NEAR
+    erbal: 0
+    erlc: 100.8291702
+    ercol: 0
+    erlvl: -4.0
+    rvtype: SMOOTH
+    rvwid: X-WIDE
+    rvpdly: 26
+    dcy: 3.292495012
+    diff: 45
+    rvbal: 0
+    rvlvl: 0
+    ldcy: 1.3
+    lmdcy: 1.3
+    hmdcy: 1.5
+    hdcy: 0.7
+    hsoft: 34
+    lxo: 205.1351776
+    mxo: 1157.523926
+    hxo: 2298.053711
+    lshv: 89.33670807
+    lsdmp: -1
+    hcut: 4477.442871
+    mtype: C
+    mrate: 9
+    mwid: 51
+    view: false
+
+  # FX5: VSS3 "Ballad Vocal Hall" — medium reverb, wired pre-insert on bus10 (Reverb/Medium)
+  5:
+    mdl: VSS3
+    fxmix: 100
+    preset: Ballad Vocal Hall
+    load: false
+    erpdly: 24
+    ertype: THEATRE
+    ersize: MED
+    erpos: NEAR
+    erbal: 0
+    erlc: 20
+    ercol: -4
+    erlvl: -2.0
+    rvtype: SMOOTH
+    rvwid: X-WIDE
+    rvpdly: 7
+    dcy: 2.775226116
+    diff: -10
+    rvbal: 0
+    rvlvl: 0
+    ldcy: 1.2
+    lmdcy: 1.1
+    hmdcy: 1.0
+    hdcy: 0.7
+    hsoft: -11
+    lxo: 91.73925781
+    mxo: 282.5075073
+    hxo: 1501.43689
+    lshv: 183.4552002
+    lsdmp: -3
+    hcut: 3262.345947
+    mtype: C
+    mrate: 0
+    mwid: 100
+    view: false
+
+  # FX6: TAP-DL slap delay — wired pre-insert on bus9 (Delay/Slap)
+  6:
+    mdl: TAP-DL
+    fxmix: 100
+    time: 66
+    rep: 7
+    slp: -8
+    fact: "1"
+    pdel: 0
+    mode: MOVE
+    wid: 70
+    diff: 0
+    lc: 172.8906555
+    hc: 20000.00195
+
+  # FX7: VSS3 "Venue Warm 1" — stream reverb, wired post-insert on bus5 (Melodic/Stream)
+  # fxmix=0: level controlled via bus5 send to this FX slot, not the mix knob
+  7:
+    mdl: VSS3
+    fxmix: 0
+    preset: Venue Warm 1
+    load: false
+    erpdly: 0
+    ertype: GAS
+    ersize: LRG
+    erpos: NEAR
+    erbal: 0
+    erlc: 20
+    ercol: -7
+    erlvl: -1.0
+    rvtype: SMOOTH
+    rvwid: X-WIDE
+    rvpdly: 18
+    dcy: 2.087310553
+    diff: 0
+    rvbal: 0
+    rvlvl: 0
+    ldcy: 1.0
+    lmdcy: 1.1
+    hmdcy: 1.0
+    hdcy: 0.7
+    hsoft: 13
+    lxo: 91.73925781
+    mxo: 299.2471313
+    hxo: 1302.834961
+    lshv: 183.4552002
+    lsdmp: 0
+    hcut: 2667.043213
+    mtype: B
+    mrate: 0
+    mwid: 100
+    view: false
+
+# ===========================================================================
+# Buses — all 16 channels
+# Bus faders are starting values; they move per service (session-adjusted)
+# ===========================================================================
+
+buses:
+  # --- Mix buses 1-8 (SBUS dynamics for buses 1-7) ---
+
+  # Bus 1: Drums reverb send — to house + stream, FX1 post-insert
+  1:
+    name: DRUMS
+    color: 8
+    icon: 210
+    led: false
+    dyn:
+      model: SBUS
+      on: true
+      mix: 100
+      gain: 1         # +1 dB makeup gain
+      threshold: -15
+      ratio: 2
+      attack: 10
+      release: 0.1
+    main:
+      1: { on: true,  lvl: -0.08 }
+      2: { on: true,  lvl: -0.5 }
+    preins: { on: true, ins: NONE }    # pre-insert slot active, no unit assigned yet
+    postins: { on: true, ins: FX1 }    # drums reverb
+    tags: "#M5"
+
+  # Bus 2: Rhythm/House — instruments mix to house only
+  2:
+    name: Rhythm/House
+    color: 9
+    icon: 300
+    led: false
+    dyn:
+      model: SBUS
+      on: true
+      mix: 100
+      gain: 0
+      threshold: -18.5
+      ratio: 2
+      attack: 10
+      release: 0.4
+    main:
+      1: { on: true, lvl: -0.18 }
+      2: { on: false, lvl: 0.2 }   # Wing stores "0 dB" as 0.200002193; write 0.2
+    tags: "#M5"
+
+  # Bus 3: Rhythm/Stream — instruments mix to stream only
+  3:
+    name: Rhythm/Stream
+    color: 10
+    icon: 300
+    led: false
+    dyn:
+      model: SBUS
+      on: true
+      mix: 100
+      gain: 0
+      threshold: -13
+      ratio: 2
+      attack: 0.3
+      release: 0.4
+    main:
+      1: { on: false, lvl: -0.3 }
+      2: { on: true,  lvl: 0.2 }
+    tags: "#M5"
+
+  # Bus 4: Melodic/House — melodic instruments to house
+  4:
+    name: Melodic/House
+    color: 10
+    icon: 9
+    led: false
+    dyn:
+      model: SBUS
+      on: true
+      mix: 100
+      gain: 0
+      threshold: -19
+      ratio: 2
+      attack: 0.3
+      release: 0.4
+    main:
+      1: { on: true,  lvl: -0.46 }
+      2: { on: false, lvl: -0.1 }
+    tags: "#M5"
+
+  # Bus 5: Melodic/Stream — melodic instruments to stream, FX7 post-insert (stream reverb)
+  5:
+    name: Melodic/Stream
+    color: 1
+    icon: 9
+    led: false
+    dyn:
+      model: SBUS
+      on: true
+      mix: 100
+      gain: 0
+      threshold: -18
+      ratio: 2
+      attack: 10
+      release: 0.4
+    main:
+      1: { on: false, lvl: 0.19 }
+      2: { on: true,  lvl: -0.4 }
+    postins: { on: true, ins: FX7 }    # stream venue reverb
+    tags: "#M6"
+
+  # Bus 6: Vocals — all vocalists, to house + stream
+  6:
+    name: Vocals
+    color: 3
+    icon: 111
+    led: false
+    dyn:
+      model: SBUS
+      on: true
+      mix: 100
+      gain: 0
+      threshold: -23.5
+      ratio: 2
+      attack: 10
+      release: 0.4
+    main:
+      1: { on: true, lvl: 0.21 }
+      2: { on: true, lvl: 0 }
+    tags: "#M5,#M6"
+
+  # Bus 7: Stream utility bus — stream only, main.1.lvl=-144 (not routed to house)
+  7:
+    color: 3
+    led: false
+    dyn:
+      model: SBUS
+      on: true
+      mix: 100
+      gain: 0
+      threshold: -21
+      ratio: 2
+      attack: 10
+      release: 0.4
+    main:
+      1: { on: false, lvl: -144 }
+      2: { on: true, lvl: 0 }
+    tags: "#M5,#M6"
+  # --- FX return buses 9-12 (no SBUS, COMP dynamics off) ---
+
+  # Bus 9: Delay/Slap — FX6 pre-insert (slap delay input), FX3 post-insert
+  # main.1.lvl=0.1 (to house), main.2.lvl=-11.7 (reduced for stream)
+  9:
+    name: Delay/Slap
+    color: 11
+    icon: 6
+    led: false
+    main:
+      1: { on: true,  lvl: 0.1 }
+      2: { on: true,  lvl: -11.7 }
+    preins:  { on: true, ins: FX6 }     # slap delay pre-insert
+    postins: { on: true, ins: FX3 }     # FX3 deferred — slot assigned, no model yet
+    tags: "#D5"
+
+  # Bus 10: Reverb/Medium — FX5 pre-insert (ballad vocal hall input)
+  10:
+    name: Reverb/Medium
+    color: 11
+    icon: 6
+    led: false
+    main:
+      1: { on: true, lvl: 0.1 }
+      2: { on: true, lvl: -12.2 }
+    preins: { on: true, ins: FX5 }
+    tags: "#D5"
+
+  # Bus 11: Reverb/Long — FX2 pre-insert (church reverb input)
+  11:
+    name: Reverb/Long
+    color: 11
+    icon: 6
+    led: false
+    main:
+      1: { on: true, lvl: 0 }
+      2: { on: true, lvl: -10.96 }
+    preins:  { on: true, ins: FX2 }
+    postins: { on: true, ins: NONE }   # post-insert slot active, no unit assigned
+    tags: "#D5"
+
+  # Bus 12: Back Vox — James team specific name (other teams call this "Delay/Rhythm")
+  12:
+    name: Back Vox
+    color: 11
+    icon: 6
+    led: false
+    main:
+      1: { on: true, lvl: 0.2 }
+      2: { on: true, lvl: -11.8 }
+    preins:  { on: true, ins: NONE }
+    postins: { on: true, ins: NONE }
+    tags: "#D5"
+
+  # --- Monitor buses 13-16 (do NOT route to house; route to stream at -144) ---
+  # Monitor faders are session-adjusted (not set here — Init.snap default stands)
+
+  # Bus 13: Monitor/1 — stage monitor mix 1
+  # Has EQ band freq corrections vs Init.snap defaults (set when operator configured monitoring)
+  13:
+    name: Monitor/1
+    color: 1
+    icon: 520
+    led: false
+    eq:
+      bands:
+        4: { freq: 1795.374634 }   # band 4 freq differs from Init default
+        5: { freq: 2971.015869 }   # band 5 freq differs from Init default
+    main:
+      1: { on: false }
+      2: { on: true, lvl: -144 }    # technically goes to stream but at -144 (off)
+
+  # Bus 14: Monitor/2 — stage monitor mix 2
+  14:
+    name: Monitor/2
+    color: 1
+    icon: 520
+    led: false
+    main:
+      1: { on: false }
+      2: { on: true, lvl: -144 }
+
+  # Bus 15: Monitor/3 — stage monitor mix 3
+  15:
+    name: Monitor/3
+    color: 1
+    icon: 521
+    led: false
+    main:
+      1: { on: false }
+      2: { on: true, lvl: -144 }
+
+  # Bus 16: Monitor/4 — stage monitor mix 4
+  16:
+    name: Monitor/4
+    color: 1
+    icon: 521
+    led: false
+    main:
+      1: { on: false }
+      2: { on: true, lvl: -144 }
+
+# ===========================================================================
+# Main outputs
+# ===========================================================================
+
+mains:
+  # Main.1: HOUSE — PA output
+  # Full EQ + 76LA limiting, GEQ pre-insert (FX13 — deferred, assigned but not modeled)
+  # in.set trim/balance corrects for analog path offsets
+  1:
+    name: HOUSE
+    icon: 509
+    led: false
+    dyn:
+      model: 76LA
+      on: true
+      mix: 100
+      gain: 0
+      input: -43.5
+      output: -13
+      attack: 1.7
+      release: 1.8
+      ratio: 20
+    eq:
+      on: true
+      bands:
+        1: { gain: 0 }                                         # flat
+        2: { gain: -4.5, freq: 197.1423645,  q: 2.139127016 } # ~200 Hz -4.5 dB
+        3: { gain: -1.0, freq: 1016.9,       q: 1.126667023 } # ~1 kHz -1 dB
+        4: { gain: -2.7, freq: 2000.0,       q: 2.871897459 } # 2 kHz -2.7 dB
+        5: { gain: -5.7, freq: 3333.5354,    q: 4.829830647 } # 3.3 kHz -5.7 dB
+        6: { gain: -0.3, freq: 4166.581543,  q: 1.411322355 } # 4.2 kHz -0.3 dB
+      high_shelf: { gain: -4.1, freq: 8313.426758, q: 0.997970223 } # deliberately Q=~1, not √2
+    in:
+      set:
+        trim: -4.5    # trims analog level going in
+        bal:  -4.5    # balance/pan trim
+    preins: { on: true, ins: FX13 }   # GEQ — deferred (slot assigned, model not set)
+
+  # Main.2: STREAM — online broadcast output
+  # 76LA limiting, no EQ (flat for stream)
+  2:
+    name: STREAM
+    icon: 606
+    led: false
+    dyn:
+      model: 76LA
+      on: true
+      mix: 100
+      gain: 0
+      input: -41.0
+      output: -14.5
+      attack: 1.7
+      release: 2.0
+      ratio: 20
+
+  # Main.3: third output — led=false, fdr=-70.1 (fixed, not session)
+  3:
+    led: false
+
+# ===========================================================================
+# DCA groups — names and starting faders
+# Faders near 0 dB are session-adjusted (moved during worship); these are start values
+# ===========================================================================
+
+dca:
+  1: { name: Rhythm,   fdr: 0 }
+  2: { name: Inst B,   fdr: 0 }
+  3: { name: Vox B,    fdr: 0 }
+  4: { name: Leads,    fdr: 0 }
+  5: { name: FX,       fdr: 0 }
+  6: { name: All No L, fdr: 0 }
+  7: { name: Monitors, fdr: 0 }
+  8: { name: "DCA|8",  fdr: -144 }   # deliberately off (typo in ref kept as-is)
+  # DCAs 9-16: Wing auto-names (set when console boots with these slots configured)
+  9:  { name: "DCA.9"  }
+  10: { name: "DCA.10" }
+  11: { name: "DCA.11" }
+  12: { name: "DCA.12" }
+  13: { name: "DCA.13" }
+  14: { name: "DCA.14" }
+  15: { name: "DCA.15" }
+  16: { name: "DCA.16" }
+
+# ===========================================================================
+# Mute groups
+# ===========================================================================
+
+mgrp:
+  1: { name: Rhythm }
+  2: { name: Inst B }
+  3: { name: Vox B }
+  4: { name: Leads }
+  5: { name: Inst All }
+  6: { name: Vox All }
+  7: { name: Monitors }
+  8: { name: Worshp, mute: true }   # pre-muted; "Worshp" typo kept from reference
+
+# ===========================================================================
+# Console config (ae_data.cfg)
+# ===========================================================================
+
+cfg:
+  # Talkback: CH40 as talkback source, routed to all 4 monitor buses
+  talk:
+    assign: CH40
+    A:
+      B13: true
+      B14: true
+      B15: true
+      B16: true
+      busdim: 20      # dim monitor buses by 20 dB when talkback is active
+
+  # Monitoring section: headphones listen to stream (MAIN.2), dim/pfldim=0
+  mon:
+    1:
+      dim: 0          # Init.snap has 20; ref has 0 — no auto-dim
+      pfldim: 0       # Init.snap has 12; ref has 0 — no pre-fader listen dim
+      src: MAIN.2     # monitor headphones from stream output
+    2:
+      dim: 0
+      pfldim: 0
+
+  # RTA display preferences
+  rta:
+    eqdecay: SLOW
+    eqdet: AVG          # RTA EQ detector mode: average (not peak)
+    rtadecay: SLOW
+    rtasrc: 65          # RTA source: ch65 = mix output
+    rtaauto: false      # manual RTA source selection
+    eqgain: -5          # RTA gain offset for EQ display
+
+# ===========================================================================
+# Infrastructure channels — ch39 (Computer) and ch40 (Talkback)
+# ch37 (Handheld) and ch38 (Headset) are team DSL channels (in assembly.yaml)
+# ===========================================================================
+
+channels:
+  # ch39: Computer audio input — local input 4, muted by default, goes to stream
+  39:
+    name: Computer
+    icon: 605
+    mute: true
+    ptap: "4"         # post-insert tap point
+    in:
+      conn:
+        grp: LCL      # local (built-in) inputs
+        in: 4
+        altgrp: "OFF"
+        altin: 1
+    main:
+      1: { on: true }     # routes to house (for PA announcement capability)
+      2: { on: true }     # routes to stream
+    send:               # explicit send modes: POST for buses 1-12, PRE for 13-16
+      1:  { mode: POST, plink: false }
+      2:  { mode: POST, plink: false }
+      3:  { mode: POST, plink: false }
+      4:  { mode: POST, plink: false }
+      5:  { mode: POST, plink: false }
+      6:  { mode: POST, plink: false }
+      7:  { mode: POST, plink: false }
+      8:  { mode: POST, plink: false }
+      9:  { mode: POST, plink: false }
+      10: { mode: POST, plink: false }
+      11: { mode: POST, plink: false }
+      12: { mode: POST, plink: false }
+      13: { mode: PRE,  plink: false }
+      14: { mode: PRE,  plink: false }
+      15: { mode: PRE,  plink: false }
+      16: { mode: PRE,  plink: false }
+
+  # ch40: Talkback mic — local input 1, muted, colour=9, does NOT go to house or stream
+  # clink=false (delinked from channel strip), led=false, trim=6.6 dB for level matching
+  40:
+    name: TALKBACK
+    col: 9
+    icon: 604
+    mute: true
+    clink: false
+    led: false
+    ptap: "4"
+    in:
+      conn:
+        grp: LCL
+        in: 1
+        altgrp: "OFF"
+        altin: 1
+      set:
+        trim: 6.6
+    main:
+      1: { on: false }    # talkback does not go to house
+      2: { on: false }    # talkback does not go to stream
+    send:
+      1:  { mode: POST, plink: false }
+      2:  { mode: POST, plink: false }
+      3:  { mode: POST, plink: false }
+      4:  { mode: POST, plink: false }
+      5:  { mode: POST, plink: false }
+      6:  { mode: POST, plink: false }
+      7:  { mode: POST, plink: false }
+      8:  { mode: POST, plink: false }
+      9:  { mode: POST, plink: false }
+      10: { mode: POST, plink: false }
+      11: { mode: POST, plink: false }
+      12: { mode: POST, plink: false }
+      13: { mode: PRE,  plink: false }
+      14: { mode: PRE,  plink: false }
+      15: { mode: PRE,  plink: false }
+      16: { mode: PRE,  plink: false }
