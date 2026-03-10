@@ -477,70 +477,69 @@ def _apply_personal_mixer_assembly(
     slots: list[dict],
 ) -> None:
     """Write MX channel sends (groups) and USR source assignments (individuals).
-
-    Called after channel rendering so send dicts already exist.
-    Infrastructure has already written matrix names and io.out A.33-A.48.
+    assembly.personal_mixer is a flat dict: slot-label → [musician, ...].
+    Tap points come from the slot definition in infrastructure (already parsed
+    into `slots`). Infrastructure has already written matrix names and io.out.
     """
     ae = snap["ae_data"]
-    pm = assembly.personal_mixer
-    if pm is None:
-        return
-
+    pm = assembly.personal_mixer or {}
     for s in slots:
         if s["type"] == "group":
             _apply_group_slot(ae, pm, musician_to_ch, s)
         elif s["type"] == "individual":
             _apply_individual_slot(ae, pm, musician_to_ch, s)
-        # monitor and off slots: io.out written by infrastructure, nothing more needed
+        # monitor and off slots: fully handled by infrastructure
 
 
 def _apply_group_slot(
     ae: dict,
-    pm,
+    pm: dict[str, list[str]],
     musician_to_ch: dict[str, int],
     slot: dict,
 ) -> None:
     """Write send.MX{n} on each musician channel assigned to this group slot."""
     label = slot["label"]
     mx_key = f"MX{slot['mx_num']}"
-    assignments = (pm.groups or {}).get(label) or {}
-    for musician_name, level in assignments.items():
+    musicians = pm.get(label) or []
+    for musician_name in musicians:
         ch_num = musician_to_ch.get(musician_name)
         if ch_num is None:
             continue  # musician not on this team
         send = ae["ch"][str(ch_num)]["send"][mx_key]
         send["on"] = True
-        send["lvl"] = float(level)
-        # mode/plink already set to PRE/True by _apply_sends default
+        send["lvl"] = 0.0
+        # mode=PRE, plink=True already set by _apply_sends default
 
 
 def _apply_individual_slot(
     ae: dict,
-    pm,
+    pm: dict[str, list[str]],
     musician_to_ch: dict[str, int],
     slot: dict,
 ) -> None:
-    """Write USR source channel assignment for this individual slot."""
+    """Write USR source channel assignment for this individual slot.
+
+    Raises ValueError if the musician list has more than one entry.
+    """
     label = slot["label"]
     usr_key = str(slot["usr_num"])
-    ind = (pm.individuals or {}).get(label)
-    if ind is None:
-        return  # not declared in assembly — stays OFF (infrastructure default)
+    musicians = pm.get(label) or []
 
+    if len(musicians) > 1:
+        raise ValueError(
+            f"P16 individual slot {label!r} has {len(musicians)} musicians "
+            f"{musicians!r}; individual slots take exactly 0 or 1."
+        )
     usr = ae["io"]["in"]["USR"][usr_key]
-    if ind.musician is None:
-        # Explicitly unassigned — leave grp=OFF, keep label
-        usr["user"]["grp"] = "OFF"
-        usr["user"]["in"] = 1
-        return
+    if not musicians:
+        return  # stays OFF — label already written by infrastructure
 
-    ch_num = musician_to_ch.get(ind.musician)
+    ch_num = musician_to_ch.get(musicians[0])
     if ch_num is None:
         return  # musician not on this team
-
     usr["user"] = {
         "grp": "CH",
         "in": ch_num,
-        "tap": ind.tap,
+        "tap": slot["tap"],
         "lr": "L+R",
     }

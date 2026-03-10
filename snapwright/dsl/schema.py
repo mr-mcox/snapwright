@@ -218,34 +218,6 @@ class MusicianEntry(BaseModel):
         return data
 
 
-class PersonalMixerIndividual(BaseModel):
-    """Assembly declaration for an individual P16 slot.
-
-    musician: name of the musician in this team's musicians section,
-              or None if the slot is unassigned this week.
-    tap:      Wing USR tap point — 'PRE' (pre-fader) or 'POST' (post-fader).
-              Required when musician is set.
-    """
-
-    musician: str | None = None
-    tap: str = "PRE"  # PRE | POST
-
-
-class PersonalMixerAssembly(BaseModel):
-    """Assembly-level personal mixer declarations.
-
-    groups:      slot-label → {musician-name: level-offset-dB}
-                 Omit a slot to leave all sends off for that group.
-                 Omit a musician within a group to exclude them from that slot.
-    individuals: slot-label → PersonalMixerIndividual
-                 Omit a slot to leave the USR source as OFF (label still written
-                 by infrastructure).
-    """
-
-    groups: dict[str, dict[str, float] | None] = Field(default_factory=dict)
-    individuals: dict[str, PersonalMixerIndividual] = Field(default_factory=dict)
-
-
 class AssemblyDef(BaseModel):
     team_name: str
     musicians: dict[str, MusicianEntry]
@@ -255,7 +227,11 @@ class AssemblyDef(BaseModel):
     monitors: dict[
         str, dict[str, float]
     ]  # monitor name → {musician: additive-dB offset}
-    personal_mixer: PersonalMixerAssembly | None = None
+    personal_mixer: dict[str, list[str]] | None = None
+    # slot-label → [musician, ...]
+    # Tap points and slot positions defined in infrastructure.yaml.
+    # Omit a slot label to leave it OFF. Individual slots: list must have
+    # exactly 0 or 1 musician (validated by the renderer).
 
     @field_validator("inputs", mode="before")
     @classmethod

@@ -1,9 +1,9 @@
 ---
 feature: personal-mixer-dsl
 date: 2026-03-09
-commit: dfce014
+commit: c2f2b7d
 branch: infrastructure-dsl
-status: implementing
+status: compacting
 read-when: starting implementation of P16 personal mixer abstraction
 ---
 

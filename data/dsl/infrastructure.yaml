@@ -635,39 +635,22 @@ channels:
 
 # ===========================================================================
 # Personal mixer (P16) — slot topology
-# 16 slots map to stage-box outputs A.33-A.48 in order.
-# Groups get consecutive MX numbers; individuals get consecutive USR numbers.
-# The physical slot order is the canonical ordering — MX/USR numbering follows.
+# Keyed by slot number (1–16 = A.33–A.48). Absent slots are implicit OFF.
+# MX numbers assigned in ascending slot order across group slots.
+# USR numbers assigned in ascending slot order across individual slots.
+# Tap points (PRE/POST) defined here — not in assembly.
 # ===========================================================================
-
 personal_mixer:
   slots:
-    - label: Bass          # A.33 → USR.1
-      type: individual
-    - label: Drum Set      # A.34 → MX1
-      type: group
-    - label: Congas        # A.35 → MX2
-      type: group
-    - type: off            # A.36
-    - label: Lead 1        # A.37 → USR.2
-      type: individual
-    - label: Lead 2        # A.38 → USR.3
-      type: individual
-    - label: Back Vox      # A.39 → MX3
-      type: group
-    - type: off            # A.40
-    - label: Piano         # A.41 → USR.4
-      type: individual
-    - label: Keys          # A.42 → USR.5
-      type: individual
-    - label: Guitars       # A.43 → MX4
-      type: group
-    - label: Other Inst    # A.44 → MX5
-      type: group
-    - type: off            # A.45
-    - type: off            # A.46
-    - label: Wireless      # A.47 → MX6
-      type: group
-    - label: Drums Mon     # A.48 → BUS.16 (Monitor/4)
-      type: monitor
-      bus: monitor_4
+    1:  { label: Bass,       type: individual, tap: PRE  }
+    2:  { label: Drum Set,   type: group }
+    3:  { label: Congas,     type: group }
+    5:  { label: Lead 1,     type: individual, tap: POST }
+    6:  { label: Lead 2,     type: individual, tap: POST }
+    7:  { label: Back Vox,   type: group }
+    9:  { label: Piano,      type: individual, tap: PRE  }
+    10: { label: Keys,       type: individual, tap: PRE  }
+    11: { label: Guitars,    type: group }
+    12: { label: Other Inst, type: group }
+    15: { label: Wireless,   type: group }
+    16: { label: Drums Mon,  type: monitor,    bus: monitor_4 }
