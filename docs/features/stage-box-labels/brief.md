@@ -3,7 +3,7 @@ feature: stage-box-labels
 date: 2026-03-09
 commit: 6e48f10
 branch: main
-status: implementing
+status: compacting
 read-when: "starting implementation"
 ---
 

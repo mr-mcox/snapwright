@@ -482,9 +482,18 @@ mains:
     outputs:
       A: 2   # stage-box A.2 → STREAM
 
-  # Main.3: third output — led=false only; AUX/CRD/USB routing not expressed (masked in diff)
+  # Main.3: stream stereo L — routes AUX.1 and USB.1 for streaming/recording output
   3:
     led: false
+    outputs:
+      AUX: 1   # AUX.1 → MAIN.3 (stream L)
+      USB: 1   # USB.1 → MAIN.3 (stream L)
+
+  # Main.4: stream stereo R — routes AUX.2 and USB.2 for streaming/recording output
+  4:
+    outputs:
+      AUX: 2   # AUX.2 → MAIN.4 (stream R)
+      USB: 2   # USB.2 → MAIN.4 (stream R)
 
 # ===========================================================================
 # AUX outputs — hardware labels and structural defaults

@@ -520,3 +520,57 @@ class TestInfrastructureMainFaders:
         """Main 3 is not infrastructure-managed — keeps Init -144."""
         snap = snap_template()
         assert snap["ae_data"]["main"]["3"]["fdr"] == -144.0
+
+
+# ---------------------------------------------------------------------------
+# Stream output routing — io.out.AUX and io.out.USB
+# ---------------------------------------------------------------------------
+
+
+class TestStreamOutputRouting:
+    """AUX and USB physical outputs must be routed to MAIN.3 and MAIN.4 (stream stereo pair).
+
+    James.snap reference:
+      io.out.AUX.1 = {grp: MAIN, in: 3}  — stream L
+      io.out.AUX.2 = {grp: MAIN, in: 4}  — stream R
+      io.out.USB.1 = {grp: MAIN, in: 3}  — stream L
+      io.out.USB.2 = {grp: MAIN, in: 4}  — stream R
+
+    These are infrastructure-level (same for all teams); expressed as
+    mains.3.outputs and mains.4.outputs in infrastructure.yaml.
+    """
+
+    def _io_out(self) -> dict:
+        return snap_template()["ae_data"]["io"]["out"]
+
+    def test_aux1_routes_to_main3(self):
+        """AUX physical output slot 1 must carry MAIN.3 (stream L)."""
+        io_out = self._io_out()
+        assert io_out["AUX"]["1"] == {"grp": "MAIN", "in": 3}
+
+    def test_aux2_routes_to_main4(self):
+        """AUX physical output slot 2 must carry MAIN.4 (stream R)."""
+        io_out = self._io_out()
+        assert io_out["AUX"]["2"] == {"grp": "MAIN", "in": 4}
+
+    def test_usb1_routes_to_main3(self):
+        """USB output slot 1 must carry MAIN.3 (stream L)."""
+        io_out = self._io_out()
+        assert io_out["USB"]["1"] == {"grp": "MAIN", "in": 3}
+
+    def test_usb2_routes_to_main4(self):
+        """USB output slot 2 must carry MAIN.4 (stream R)."""
+        io_out = self._io_out()
+        assert io_out["USB"]["2"] == {"grp": "MAIN", "in": 4}
+
+    def test_aux3_and_above_remain_off(self):
+        """AUX slots 3+ must remain OFF (not routed)."""
+        io_out = self._io_out()
+        for slot in ["3", "4"]:
+            assert io_out["AUX"][slot] == {"grp": "OFF", "in": 1}
+
+    def test_usb3_and_above_remain_off(self):
+        """USB slots 3+ must remain OFF (not routed)."""
+        io_out = self._io_out()
+        for slot in ["3", "4"]:
+            assert io_out["USB"][slot] == {"grp": "OFF", "in": 1}
