@@ -454,3 +454,69 @@ class TestAuxDefaults:
                 assert out_cfg.get("on") is False, (
                     f"aux.{aux_num}.main.{out_key}.on should be False"
                 )
+
+
+# ---------------------------------------------------------------------------
+# Bus and main faders
+# ---------------------------------------------------------------------------
+
+
+class TestInfrastructureBusFaders:
+    """Bus faders must be set from infrastructure.yaml, not left at Init -144."""
+
+    def test_mix_buses_not_at_init_floor(self):
+        """Buses 1-7 must not be at Init default (-144 dB) after infrastructure."""
+        snap = snap_template()
+        for i in range(1, 8):
+            fdr = snap["ae_data"]["bus"][str(i)]["fdr"]
+            assert fdr > -10, f"bus.{i}.fdr={fdr}, expected near 0 dB (not Init -144)"
+
+    def test_bus1_fader(self):
+        snap = snap_template()
+        assert abs(snap["ae_data"]["bus"]["1"]["fdr"] - (-0.42969)) < 0.01
+
+    def test_bus6_vocals_fader(self):
+        snap = snap_template()
+        assert abs(snap["ae_data"]["bus"]["6"]["fdr"] - 2.23633) < 0.01
+
+    def test_bus8_keeps_init_floor(self):
+        """Bus 8 is unconfigured — fdr stays at Init -144."""
+        snap = snap_template()
+        assert snap["ae_data"]["bus"]["8"]["fdr"] == -144.0
+
+    def test_bus12_back_vox_fader(self):
+        """Bus 12 (Back Vox) starts at -144 dB per reference."""
+        snap = snap_template()
+        assert snap["ae_data"]["bus"]["12"]["fdr"] == -144.0
+
+    def test_monitor_buses_keep_init_default(self):
+        """Monitor buses 13-16 keep Init default (0 dB) — session-adjusted, not set here."""
+        snap = snap_template()
+        for i in range(13, 17):
+            fdr = snap["ae_data"]["bus"][str(i)]["fdr"]
+            assert fdr == 0.0, f"bus.{i}.fdr={fdr}, expected Init default 0.0"
+
+
+class TestInfrastructureMainFaders:
+    """Main output faders must be set from infrastructure.yaml."""
+
+    def test_main1_fader_not_at_init_floor(self):
+        snap = snap_template()
+        assert snap["ae_data"]["main"]["1"]["fdr"] > -144
+
+    def test_main2_fader_not_at_init_floor(self):
+        snap = snap_template()
+        assert snap["ae_data"]["main"]["2"]["fdr"] > -144
+
+    def test_main1_fader(self):
+        snap = snap_template()
+        assert abs(snap["ae_data"]["main"]["1"]["fdr"] - (-35.42969)) < 0.01
+
+    def test_main2_fader(self):
+        snap = snap_template()
+        assert abs(snap["ae_data"]["main"]["2"]["fdr"] - 0.54688) < 0.01
+
+    def test_main3_keeps_init_floor(self):
+        """Main 3 is not infrastructure-managed — keeps Init -144."""
+        snap = snap_template()
+        assert snap["ae_data"]["main"]["3"]["fdr"] == -144.0
