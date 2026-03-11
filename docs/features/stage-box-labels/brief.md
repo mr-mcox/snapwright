@@ -3,7 +3,7 @@ feature: stage-box-labels
 date: 2026-03-09
 commit: 6e48f10
 branch: main
-status: solution-space
+status: implementing
 read-when: "starting implementation"
 ---
 
@@ -23,7 +23,7 @@ of what's dialed into channel processing.
 
 ## Constraints
 
-- `preamp_gain` is added to `InputAssignment` schema (alongside existing `source` and `input`)
+- `preamp_gain: float | None` is added to `InstrumentLayer` and `MusicianEntry` — it is a property of the musician/instrument, not the slot assignment; `InputAssignment` stays as `source` + `input` only
 - Name and icon for `io.in.A[N]` are derived from the musician's `name` and `icon` fields — no separate declaration
 - Renderer writes `name`, `icon`, `g` to `io.in.A[slot]` for each musician in the assembly's `inputs:` map
 - Slots not in the assembly keep Init.snap defaults (blank name, 0 gain) — no fabrication

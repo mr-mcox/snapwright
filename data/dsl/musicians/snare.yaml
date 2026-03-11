@@ -2,6 +2,7 @@ name: Snare
 color: 8
 icon: 202
 fader: -6.89
+preamp_gain: 15.5
 
 processing:
   filters:

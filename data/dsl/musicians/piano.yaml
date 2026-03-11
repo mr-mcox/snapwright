@@ -1,6 +1,7 @@
 name: Piano
 color: 3
 icon: 400
+preamp_gain: 38
 
 processing:
   eq:

@@ -2,6 +2,7 @@ name: Conga 1
 color: 1
 icon: 215
 fader: -4.33
+preamp_gain: 28
 
 processing:
   filters:

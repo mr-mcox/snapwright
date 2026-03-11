@@ -2,6 +2,7 @@ name: Bass
 color: 9
 icon: 302
 fader: -0.06
+preamp_gain: 15.5
 
 processing:
   filters:

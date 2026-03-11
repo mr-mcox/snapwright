@@ -2,6 +2,7 @@ name: Violin
 color: 1
 icon: 308
 fader: -1.22
+preamp_gain: 45.5
 trim: 0.2
 
 processing:
