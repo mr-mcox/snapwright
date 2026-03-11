@@ -3,19 +3,17 @@ feature: bus-rendering
 date: 2026-03-08
 commit: 6e48f10
 branch: main
-status: solution-space
+status: compacting
 read-when: "starting implementation — infrastructure-dsl is done, all dependencies satisfied"
 ---
 
 ## Problem
 
 Every bus and main output fader renders at -144 dB (Init default = fully off). Loading
-this snapshot on Sunday produces total silence. Bus display names, colors, and dynamics
-are also unmanaged — operators see "BASS" instead of "Rhythm/House", etc. All of this
-passes through from Init.snap unchanged.
+this snapshot on Sunday produces total silence. (Bus names, colors, and dynamics are
+already handled by the infrastructure renderer from the infra-dsl feature.)
 
 ## Not Doing
-
 - Bus *send* rendering (channel sends to buses are already handled by the channel pipeline)
 - Bus tags (handled by `tags-ownership` feature)
 - Matrix bus rendering (handled by `personal-mixer-routing` feature)
@@ -24,19 +22,14 @@ passes through from Init.snap unchanged.
 
 ## Constraints
 
-- Infrastructure layer defines all 16 buses (name, col, fdr, mute, dynamics) and mains 1-3 (fdr)
-- Bus fader defaults: ~0 dB for active mix buses; Init -144 preserved only for explicitly unused buses
-- Main fader defaults: reasonable operational starting point (not -144, not necessarily reference values)
-- Display names are explicit in the DSL — no automatic derivation from logical names
-- Renderer writes `name`, `col`, `fdr`, `mute`, and dynamics to `ae_data.bus[N]`; `fdr` to `ae_data.main[N]`
-- TDD — bus and main fader rendering are new renderer sections with their own test coverage
-- The integration diff test (`test_phase1_render.py`) must be widened to include `ae_data.bus` and `ae_data.main` — a passing diff against the James reference is the acceptance criterion for correctness
+- Renderer change is minimal: add `fdr` and `mute` to `_BUS_FIELD_MAP` in `infrastructure.py` — the existing pass-through loop already handles both buses and mains
+- YAML: add `fdr` values for active buses 1–7 and FX return buses 9–12, and mains 1–2; monitor buses 13–16 keep Init default (-144, session-adjusted)
+- Integration diff test (`test_phase1_render.py`) widened to cover `ae_data.bus` and `ae_data.main` — a passing diff against the James reference is the acceptance criterion
+- TDD — unit tests in `test_infrastructure.py` (following existing `TestInfrastructureBuses` / `TestInfrastructureMain` pattern) cover bus faders and main faders before implementation
 
 ## Escalation Triggers
 
-- If bus dynamics config (SBUS model params) requires new Pydantic schema beyond what exists for channel dynamics, pause — reuse vs new models decision
 - If main output fader defaults conflict with what the sound engineer expects on load, pause — operational defaults are a user decision
 
 ## Decisions
-
 (populated during implementation)

@@ -195,6 +195,8 @@ def _apply_fx(ae: dict, fx_config: dict) -> None:
 _BUS_FIELD_MAP = {
     "name": "name",
     "color": "col",
+    "fdr": "fdr",
+    "mute": "mute",
     "icon": "icon",
     "led": "led",
     "tags": "tags",

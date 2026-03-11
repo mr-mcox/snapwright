@@ -166,6 +166,7 @@ buses:
     color: 8
     icon: 210
     led: false
+    fdr: -0.42969
     dyn:
       model: SBUS
       on: true
@@ -188,6 +189,7 @@ buses:
     color: 9
     icon: 300
     led: false
+    fdr: -0.38086
     dyn:
       model: SBUS
       on: true
@@ -208,6 +210,7 @@ buses:
     color: 10
     icon: 300
     led: false
+    fdr: -0.92773
     dyn:
       model: SBUS
       on: true
@@ -228,6 +231,7 @@ buses:
     color: 10
     icon: 9
     led: false
+    fdr: 0.55664
     dyn:
       model: SBUS
       on: true
@@ -248,6 +252,7 @@ buses:
     color: 1
     icon: 9
     led: false
+    fdr: 0.29297
     dyn:
       model: SBUS
       on: true
@@ -269,6 +274,7 @@ buses:
     color: 3
     icon: 111
     led: false
+    fdr: 2.23633
     dyn:
       model: SBUS
       on: true
@@ -287,6 +293,7 @@ buses:
   7:
     color: 3
     led: false
+    fdr: 0.25391
     dyn:
       model: SBUS
       on: true
@@ -309,6 +316,7 @@ buses:
     color: 11
     icon: 6
     led: false
+    fdr: 0.0
     main:
       1: { on: true,  lvl: 0.1 }
       2: { on: true,  lvl: -11.7 }
@@ -322,6 +330,7 @@ buses:
     color: 11
     icon: 6
     led: false
+    fdr: -0.1
     main:
       1: { on: true, lvl: 0.1 }
       2: { on: true, lvl: -12.2 }
@@ -334,6 +343,7 @@ buses:
     color: 11
     icon: 6
     led: false
+    fdr: -0.54688
     main:
       1: { on: true, lvl: 0 }
       2: { on: true, lvl: -10.96 }
@@ -347,6 +357,7 @@ buses:
     color: 11
     icon: 6
     led: false
+    fdr: -144
     main:
       1: { on: true, lvl: 0.2 }
       2: { on: true, lvl: -11.8 }
@@ -422,6 +433,7 @@ mains:
     name: HOUSE
     icon: 509
     led: false
+    fdr: -35.42969
     dyn:
       model: 76LA
       on: true
@@ -456,6 +468,7 @@ mains:
     name: STREAM
     icon: 606
     led: false
+    fdr: 0.54688
     dyn:
       model: 76LA
       on: true

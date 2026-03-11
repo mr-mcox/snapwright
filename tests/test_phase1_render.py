@@ -211,6 +211,28 @@ def test_james_vox_monitor_1(rendered, reference):
 
 
 # ---------------------------------------------------------------------------
+# Bus and main faders
+# ---------------------------------------------------------------------------
+
+# Buses with explicit fdr in infrastructure.yaml (excludes bus 8 and monitors 13-16)
+INFRA_BUS_FADERS = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12]
+
+
+@pytest.mark.parametrize("bus_num", INFRA_BUS_FADERS)
+def test_bus_fader_within_tolerance(rendered, reference, bus_num):
+    r = rendered["ae_data"]["bus"][str(bus_num)]["fdr"]
+    t = reference["ae_data"]["bus"][str(bus_num)]["fdr"]
+    assert abs(r - t) < 0.05, f"bus{bus_num} fader: rendered={r:.3f} target={t:.3f}"
+
+
+@pytest.mark.parametrize("main_num", [1, 2])
+def test_main_fader_within_tolerance(rendered, reference, main_num):
+    r = rendered["ae_data"]["main"][str(main_num)]["fdr"]
+    t = reference["ae_data"]["main"][str(main_num)]["fdr"]
+    assert abs(r - t) < 0.05, f"main{main_num} fader: rendered={r:.3f} target={t:.3f}"
+
+
+# ---------------------------------------------------------------------------
 # Full diff printout (not a pass/fail — review to assess overall quality)
 # ---------------------------------------------------------------------------
 
