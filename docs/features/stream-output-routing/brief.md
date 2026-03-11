@@ -3,7 +3,7 @@ feature: stream-output-routing
 date: 2026-03-09
 commit: 6e48f10
 branch: main
-status: solution-space
+status: compacting
 read-when: "starting implementation"
 ---
 
