@@ -2,6 +2,7 @@ name: Overhead
 color: 8
 icon: 210
 fader: 3.46
+preamp_gain: 33
 
 processing:
   filters:

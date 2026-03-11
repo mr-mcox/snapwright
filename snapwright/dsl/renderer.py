@@ -169,6 +169,9 @@ def _render(assembly: AssemblyDef, dsl_root: Path) -> dict:
         _slots = get_p16_slots(_infra)
         _apply_personal_mixer_assembly(snap, assembly, musician_to_ch, _slots)
 
+    # Write stage box labels (name, icon, preamp gain) for all assembly inputs
+    _apply_stage_box_labels(snap, assembly, dsl_root)
+
     return snap
 
 
@@ -221,6 +224,36 @@ def _apply_input(ch: dict, assembly: AssemblyDef, musician_name: str) -> None:
     ch["in"]["conn"]["in"] = assignment.input
     ch["in"]["conn"]["altgrp"] = "OFF"
     ch["in"]["conn"]["altin"] = 1
+
+
+def _apply_stage_box_labels(
+    snap: dict,
+    assembly: AssemblyDef,
+    dsl_root: Path,
+) -> None:
+    """Write name, icon, and preamp gain to io.in.A[slot] for each assembly input.
+
+    Only stage-box inputs are written. Other sources (local, usb) are skipped.
+    Slots not in the assembly keep Init.snap defaults (blank name, 0 gain).
+    """
+    io_a = snap["ae_data"]["io"]["in"]["A"]
+    for musician_name, assignment in assembly.inputs.items():
+        if assignment.source != "stage-box":
+            continue
+        slot = str(assignment.input)
+        if slot not in io_a:
+            continue
+        entry = assembly.musicians.get(musician_name)
+        if entry is None:
+            continue
+        resolved = resolve_musician(entry, dsl_root)
+        slot_dict = io_a[slot]
+        if resolved.get("name") is not None:
+            slot_dict["name"] = resolved["name"]
+        if resolved.get("icon") is not None:
+            slot_dict["icon"] = resolved["icon"]
+        if resolved.get("preamp_gain") is not None:
+            slot_dict["g"] = resolved["preamp_gain"]
 
 
 def _apply_processing(ch: dict, processing: dict) -> None:

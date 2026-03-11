@@ -2,6 +2,7 @@ name: Tom
 color: 8
 icon: 208
 fader: -0.72
+preamp_gain: 18
 
 processing:
   filters:

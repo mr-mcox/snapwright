@@ -2,6 +2,7 @@ name: Handheld
 color: 12
 icon: 102
 fader: -5.46
+preamp_gain: 30.5
 ptap: 4            # post-insert tap point (4=post-insert, Wing default is 5=post-EQ)
 preins: FX10       # DE-S2 de-esser pre-insert (deferred: slot assigned, model not yet set)
 main_2_on: true    # route to stream output

@@ -2,6 +2,7 @@ name: Conga 2
 color: 1
 icon: 215
 fader: -4.18
+preamp_gain: 30.5
 
 # Conga 2 shares all processing with Conga 1; only the name and fader differ.
 inherits:

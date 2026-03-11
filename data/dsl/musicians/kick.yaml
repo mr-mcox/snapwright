@@ -2,6 +2,7 @@ name: Kick
 color: 8
 icon: 200
 fader: -3.33
+preamp_gain: 28
 
 processing:
   filters:

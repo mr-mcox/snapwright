@@ -2,6 +2,7 @@ name: James
 color: 1
 icon: 0
 fader: 0.58
+preamp_gain: 38
 
 processing:
   filters:

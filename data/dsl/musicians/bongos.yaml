@@ -2,6 +2,7 @@ name: Bongos
 color: 1
 icon: 216
 fader: 0.12
+preamp_gain: 23
 
 processing:
   filters:

@@ -1,6 +1,7 @@
 name: Flute
 color: 1
 icon: 318
+preamp_gain: 33
 
 # SOUL EQ is canonical across teams; dynamics/gate default to off and are overridden per-team.
 processing:
