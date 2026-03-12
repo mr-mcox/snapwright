@@ -151,9 +151,12 @@ class InstrumentLayer(BaseModel):
     main_2_lvl: float | None = None  # main.2 routing level in dB
     preins: str | None = None  # pre-insert effect slot name (e.g. 'FX10')
     ptap: int | None = None  # Wing tap point (4=post-insert, 5=post-EQ; default=5)
-    preamp_gain: float | None = None  # stage box preamp gain in dB (written to io.in.A[slot].g)
+    preamp_gain: float | None = None  # stage box preamp gain in dB (io.in.A[slot].g)
     sends: dict[str, float] = Field(default_factory=dict)  # logical bus name → dB level
     processing: ProcessingConfig | None = None
+    # Names resolved to numbers via infrastructure slugs at render time
+    mute_groups: list[str] | None = None
+    dcas: list[str] | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -205,11 +208,14 @@ class MusicianEntry(BaseModel):
     main_2_lvl: float | None = None  # main.2 routing level in dB
     preins: str | None = None  # pre-insert effect slot name (e.g. 'FX10')
     ptap: int | None = None  # Wing tap point (4=post-insert, 5=post-EQ)
-    preamp_gain: float | None = None  # stage box preamp gain in dB (written to io.in.A[slot].g)
+    preamp_gain: float | None = None  # stage box preamp gain in dB (io.in.A[slot].g)
     # Processing
     overrides: ProcessingConfig | None = None
     offsets: LevelOffsets | None = None
     sends: dict[str, float] = Field(default_factory=dict)
+    # Per-musician override (assembly level); inherits from musician file if absent
+    mute_groups: list[str] | None = None
+    dcas: list[str] | None = None
 
     @model_validator(mode="before")
     @classmethod

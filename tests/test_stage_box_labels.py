@@ -12,16 +12,10 @@ Acceptance criteria:
 """
 
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
 from snapwright.dsl.renderer import render_assembly
-from snapwright.dsl.schema import (
-    AssemblyDef,
-    InputAssignment,
-    MusicianEntry,
-)
 
 JAMES_ASSEMBLY = Path("data/dsl/teams/james/assembly.yaml")
 
@@ -136,6 +130,7 @@ def test_stage_box_diff_vs_reference(james_rendered):
     Slots where the assembly has diverged from the reference are expected.
     """
     import json
+
     from deepdiff import DeepDiff
 
     ref = json.load(open("data/reference/sunday-starters/James.snap"))
@@ -153,12 +148,19 @@ def test_stage_box_diff_vs_reference(james_rendered):
         r = rend_a[slot]
         t = ref_a[slot]
         diff = DeepDiff(r, t, ignore_numeric_type_changes=True, significant_digits=2)
-        n = sum(len(v) if isinstance(v, dict) else 1 for v in diff.values()) if diff else 0
+        n = (
+            sum(len(v) if isinstance(v, dict) else 1 for v in diff.values())
+            if diff
+            else 0
+        )
         total_diffs += n
         if diff:
             ref_name = t.get("name", "")
             rend_name = r.get("name", "")
-            print(f"\n  A[{slot:2s}] rendered={repr(rend_name)} ref={repr(ref_name)}: {n} difference(s)")
+            print(
+                f"\n  A[{slot:2s}] rendered={rend_name!r}"
+                f" ref={ref_name!r}: {n} difference(s)"
+            )
             for change_type, changes in diff.items():
                 if isinstance(changes, dict):
                     for path, detail in list(changes.items())[:3]:

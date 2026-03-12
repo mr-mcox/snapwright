@@ -9,6 +9,7 @@ Usage:
     python scripts/infra_diff.py bus      # buses only
     python scripts/infra_diff.py main     # main outputs only
     python scripts/infra_diff.py ch       # infra channels (37-40) only
+    python scripts/infra_diff.py ch_tags  # tags field across all assembly channels
     python scripts/infra_diff.py dca      # DCAs only
     python scripts/infra_diff.py mgrp     # mute groups only
     python scripts/infra_diff.py cfg      # ae_data.cfg only
@@ -50,7 +51,16 @@ _SESSION_MONITOR_BUSES = {"13", "14", "15", "16"}
 _FLOAT_TOL = 0.1
 
 # Focus sections (what the brief cares about)
-_FOCUS_SECTIONS = {"fx", "bus", "main", "ch", "dca", "mgrp", "cfg", "io"}
+# Assembly channels covered by ch_tags (all worship + spare channels)
+_ASSEMBLY_CHANNELS = {
+    "1", "2", "3", "4", "5", "6", "7", "8",
+    "13", "14", "15", "16",
+    "25", "26", "27", "28",
+    "37", "38",
+}
+
+# Focus sections (what the brief cares about)
+_FOCUS_SECTIONS = {"fx", "bus", "main", "ch", "ch_tags", "dca", "mgrp", "cfg", "io"}
 
 # ---------------------------------------------------------------------------
 # Diff helpers
@@ -248,11 +258,35 @@ def diff_io(rendered_snap: dict, ref_snap: dict) -> list[str]:
             a_grp.pop(slot, None)
 
     return _diff_dict(rendered_out, ref_out, "io.out")
+
+
+def diff_ch_tags(rendered_snap: dict, ref_snap: dict) -> list[str]:
+    """Diff the tags field across all assembly channels (worship + spares).
+
+    Covers channels 1-8, 13-16, 25-28, 37-38.
+    This is the authoritative check for tags-ownership: every assembly channel
+    must have the exact tag string declared in the DSL.
+    """
+    lines = []
+    rendered = rendered_snap["ae_data"].get("ch", {})
+    reference = ref_snap["ae_data"].get("ch", {})
+    for ch_num in sorted(_ASSEMBLY_CHANNELS, key=int):
+        r_tags = rendered.get(ch_num, {}).get("tags", "")
+        f_tags = reference.get(ch_num, {}).get("tags", "")
+        if r_tags != f_tags:
+            lines.append(
+                f"  DIFFER   ch.{ch_num}.tags"
+                f"  rendered={r_tags!r}  ref={f_tags!r}"
+            )
+    return lines
+
+
 _SECTION_FUNCS = {
     "fx": diff_fx,
     "bus": diff_bus,
     "main": diff_main,
     "ch": diff_ch,
+    "ch_tags": diff_ch_tags,
     "dca": diff_dca,
     "mgrp": diff_mgrp,
     "cfg": diff_cfg,

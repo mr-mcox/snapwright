@@ -71,7 +71,8 @@ class TestGetP16Slots:
     def test_individual_slots_get_sequential_usr_numbers(self):
         slots = get_p16_slots(_INFRA)
         individuals = [s for s in slots if s["type"] == "individual"]
-        assert [s["usr_num"] for s in individuals] == list(range(1, len(individuals) + 1))
+        expected = list(range(1, len(individuals) + 1))
+        assert [s["usr_num"] for s in individuals] == expected
 
     def test_drum_set_is_first_group_mx1(self):
         slots = get_p16_slots(_INFRA)
@@ -223,8 +224,9 @@ class TestPersonalMixerMXSends:
 
     def test_guitars_is_mx4(self, rendered):
         """Guitars is the 4th group slot (slot 11) → MX4."""
-        assert rendered["ae_data"]["ch"]["13"]["send"]["MX4"]["on"] is True  # james-guitar
-        assert rendered["ae_data"]["ch"]["16"]["send"]["MX4"]["on"] is True  # violin
+        ch = rendered["ae_data"]["ch"]
+        assert ch["13"]["send"]["MX4"]["on"] is True  # james-guitar
+        assert ch["16"]["send"]["MX4"]["on"] is True  # violin
 
     def test_other_inst_is_mx5(self, rendered):
         """Other Inst is the 5th group slot (slot 12) → MX5."""

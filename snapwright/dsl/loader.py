@@ -64,7 +64,8 @@ def resolve_musician(entry: MusicianEntry, dsl_root: Path) -> dict[str, Any]:
     for ref in inherits:
         file_dict = _resolve_file(dsl_root / ref, dsl_root)
         merged = _deep_merge(merged, file_dict)
-    for field in ("name", "color", "icon", "mute", "fader", "trim", "main_on"):
+    for field in ("name", "color", "icon", "mute", "fader", "trim", "main_on",
+                   "mute_groups", "dcas"):
         val = getattr(entry, field)
         if val is not None:
             merged[field] = val

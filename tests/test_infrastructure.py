@@ -490,7 +490,8 @@ class TestInfrastructureBusFaders:
         assert snap["ae_data"]["bus"]["12"]["fdr"] == -144.0
 
     def test_monitor_buses_keep_init_default(self):
-        """Monitor buses 13-16 keep Init default (0 dB) — session-adjusted, not set here."""
+        """Monitor buses 13-16 keep Init default (0 dB)."""
+        # Session-adjusted; infrastructure intentionally leaves them at 0.
         snap = snap_template()
         for i in range(13, 17):
             fdr = snap["ae_data"]["bus"][str(i)]["fdr"]
@@ -528,7 +529,7 @@ class TestInfrastructureMainFaders:
 
 
 class TestStreamOutputRouting:
-    """AUX and USB physical outputs must be routed to MAIN.3 and MAIN.4 (stream stereo pair).
+    """AUX and USB physical outputs must route to MAIN.3/MAIN.4 (stream stereo pair).
 
     James.snap reference:
       io.out.AUX.1 = {grp: MAIN, in: 3}  — stream L

@@ -20,7 +20,11 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from snapwright.dsl.infrastructure import get_p16_slots, patch_channel_firmware
+from snapwright.dsl.infrastructure import (
+    build_mgrp_slug_map,
+    get_p16_slots,
+    patch_channel_firmware,
+)
 from snapwright.dsl.loader import load_assembly, resolve_musician
 from snapwright.dsl.schema import AssemblyDef
 from snapwright.wing.defaults import channel_defaults, snap_template
@@ -77,6 +81,22 @@ _DEFAULT_GATE_MODEL = "GATE"
 
 
 # ---------------------------------------------------------------------------
+# Tag building
+# ---------------------------------------------------------------------------
+
+
+def build_tags(dcas: list[int], mute_groups: list[int]) -> str:
+    """Build a Wing tag string from DCA and mute-group membership lists.
+
+    Tag format: comma-separated #D<n> tokens (DCAs) then #M<n> tokens (mgrps).
+    Order within each group preserves input list order.
+    Empty lists produce an empty string.
+    """
+    parts = [f"#D{n}" for n in dcas] + [f"#M{n}" for n in mute_groups]
+    return ",".join(parts)
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -107,29 +127,23 @@ def render_assembly(
 
 def _render(assembly: AssemblyDef, dsl_root: Path) -> dict:
     snap = snap_template()
-
+    mgrp_slug_map = build_mgrp_slug_map()
     # Build reverse map: logical bus name -> physical bus number (as string)
     bus_by_name: dict[str, str] = {
         name: str(num) for num, name in assembly.buses.items()
     }
-
     # Build musician-to-channel reverse map for the monitors offset pass
     musician_to_ch: dict[str, int] = {
         name: num for num, name in assembly.channels.items()
     }
-
     # Apply firmware patch to ALL channels (Base.snap predates these fields)
-    for ch_dict in snap["ae_data"]["ch"].values():
-        ch_dict["in"]["set"]["dly"] = _IN_SET_DELAY_DEFAULT
-        for field, value in _FLT_SLOPE_DEFAULTS.items():
-            if field not in ch_dict["flt"]:
-                ch_dict["flt"][field] = value
-
-    # Render each channel listed in the assembly
+    _patch_all_channels(snap)
+    # Resolve and render each channel; cache resolved dicts for tag writing
+    resolved_by_ch: dict[int, dict] = {}
     for ch_num, musician_name in assembly.channels.items():
         entry = assembly.musicians[musician_name]
         resolved = resolve_musician(entry, dsl_root)
-
+        resolved_by_ch[ch_num] = resolved
         ch = channel_defaults(ch_num)
         _patch_firmware(ch)
         _apply_identity(ch, resolved)
@@ -163,16 +177,34 @@ def _render(assembly: AssemblyDef, dsl_root: Path) -> dict:
 
     # Apply personal mixer assembly (MX sends + USR channel assignments)
     if assembly.personal_mixer is not None:
-        import yaml as _yaml
-        _infra_path = Path(__file__).parent.parent.parent / "data" / "dsl" / "infrastructure.yaml"
-        _infra = _yaml.safe_load(_infra_path.read_text())
-        _slots = get_p16_slots(_infra)
-        _apply_personal_mixer_assembly(snap, assembly, musician_to_ch, _slots)
+        _apply_personal_mixer_assembly(
+            snap, assembly, musician_to_ch, _load_p16_slots()
+        )
 
     # Write stage box labels (name, icon, preamp gain) for all assembly inputs
     _apply_stage_box_labels(snap, assembly, dsl_root)
+    # Write channel tags — renderer owns ch.tags completely
+    _apply_channel_tags(snap, assembly.channels, resolved_by_ch, mgrp_slug_map)
 
     return snap
+
+def _patch_all_channels(snap: dict) -> None:
+    """Apply firmware-level defaults to every channel (Base.snap predates them)."""  # noqa: E501
+    for ch_dict in snap["ae_data"]["ch"].values():
+        ch_dict["in"]["set"]["dly"] = _IN_SET_DELAY_DEFAULT
+        for field, value in _FLT_SLOPE_DEFAULTS.items():
+            if field not in ch_dict["flt"]:
+                ch_dict["flt"][field] = value
+
+
+def _load_p16_slots() -> list[dict]:
+    """Load and parse P16 slot topology from infrastructure.yaml."""
+    import yaml as _yaml  # noqa: PLC0415
+
+    _infra_path = (
+        Path(__file__).parent.parent.parent / "data" / "dsl" / "infrastructure.yaml"
+    )
+    return get_p16_slots(_yaml.safe_load(_infra_path.read_text()))
 
 
 def _patch_firmware(ch: dict) -> None:
@@ -254,6 +286,42 @@ def _apply_stage_box_labels(
             slot_dict["icon"] = resolved["icon"]
         if resolved.get("preamp_gain") is not None:
             slot_dict["g"] = resolved["preamp_gain"]
+
+def _apply_channel_tags(
+    snap: dict,
+    channels: dict[int, str],
+    resolved_by_ch: dict[int, dict],
+    mgrp_slug_map: dict[str, int],
+) -> None:
+    """Write ch.tags for all channels — renderer owns this field completely.
+    Assembly channels: mute_groups / dcas are resolved from the musician file
+    inheritance stack, then translated from names to numbers via the
+    infrastructure slug map.
+    Non-assembly channels: tags = "" — explicit, no merge with base template.
+    """
+    all_ch = snap["ae_data"]["ch"]
+    # Clear all first — renderer owns tags; no merge with base template
+    for ch_dict in all_ch.values():
+        ch_dict["tags"] = ""
+    for ch_num in channels:
+        ch_key = str(ch_num)
+        if ch_key not in all_ch:
+            continue
+        resolved = resolved_by_ch.get(ch_num, {})
+        mgrp_names = resolved.get("mute_groups") or []
+        dca_names = resolved.get("dcas") or []
+        mgrps = _resolve_group_nums(mgrp_names, mgrp_slug_map)
+        dcas = _resolve_group_nums(dca_names, mgrp_slug_map)
+        all_ch[ch_key]["tags"] = build_tags(dcas, mgrps)
+
+
+def _resolve_group_nums(names: list[str], slug_map: dict[str, int]) -> list[int]:
+    """Translate a list of group name strings to Wing group numbers.
+
+    Names are matched case-insensitively against the slug map.
+    Unknown names are silently skipped (safe during incremental rollout).
+    """
+    return [slug_map[n.lower()] for n in names if n.lower() in slug_map]
 
 
 def _apply_processing(ch: dict, processing: dict) -> None:
