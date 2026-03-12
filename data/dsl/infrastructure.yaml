@@ -541,7 +541,7 @@ mgrp:
   5: { name: Inst All }
   6: { name: Vox All }
   7: { name: Monitors }
-  8: { name: Worshp, mute: true }   # pre-muted; "Worshp" typo kept from reference
+  8: { name: Worshp, slug: worship, mute: true }   # slug decouples DSL name from Wing's typo
 
 # ===========================================================================
 # Console config (ae_data.cfg)

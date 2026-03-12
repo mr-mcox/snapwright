@@ -608,6 +608,32 @@ _MONITOR_BUS_NUMBERS: dict[str, int] = {
     "monitor_4": 16,
 }
 
+def build_mgrp_slug_map(infra_path: Path | None = None) -> dict[str, int]:
+    """Build a slug/name → mute-group number mapping from infrastructure.yaml.
+
+    For each mgrp entry:
+      - If a ``slug`` field is present it is registered (preferred DSL identifier).
+      - The lowercase ``name`` is always registered as a fallback.
+
+    Both keys point to the same number, so callers can use either form.
+    Unknown names in DSL declarations are silently skipped at render time.
+    """
+    if infra_path is None:
+        infra_path = _INFRA_YAML_PATH
+    with infra_path.open() as f:
+        raw = yaml.safe_load(f) or {}
+    result: dict[str, int] = {}
+    for num, cfg in (raw.get("mgrp") or {}).items():
+        num = int(num)
+        cfg = cfg or {}
+        name = cfg.get("name", "")
+        slug = cfg.get("slug", "")
+        if slug:
+            result[slug.lower()] = num
+        if name:
+            result[name.lower()] = num
+    return result
+
 
 def get_p16_slots(infra_yaml: dict) -> list[dict]:
     """Parse personal_mixer.slots from infrastructure.yaml into 16 slot dicts.

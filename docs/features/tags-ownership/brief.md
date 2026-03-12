@@ -3,8 +3,8 @@ feature: tags-ownership
 date: 2026-03-08
 commit: 9b4bb7b
 branch: main
-status: problem-space
-read-when: "after infrastructure-dsl lands"
+status: compacting
+read-when: "if revisiting tag behaviour"
 ---
 
 ## Problem
@@ -39,4 +39,8 @@ DCA and mute group membership is encoded in the `tags` field on channels and bus
 
 ## Decisions
 
-(populated during implementation)
+- **2026-03-09** Assembly-level `channel_mute_groups`/`channel_dcas` on `AssemblyDef`; per-musician
+  override via `mute_groups`/`dcas` on `MusicianEntry`. Renderer owns `ch.tags` completely
+  (clears all first, then writes from DSL). Bus tags left as raw strings in infrastructure.yaml
+  (already correct; no structural change needed).
+- **2026-03-09** Integration diff: `ch_tags` section added covering all 18 assembly channels.
