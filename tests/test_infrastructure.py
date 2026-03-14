@@ -203,6 +203,35 @@ class TestInfrastructureFX:
         assert fx7.get("preset") == "Venue Warm 1"
         assert fx7["fxmix"] == 0  # level via bus send, not mix knob
 
+    def test_fx10_deesser_handheld(self):
+        """FX10: DE-S2 deesser for ch37 Handheld — params verbatim from James ref."""
+        snap = snap_template()
+        fx10 = snap["ae_data"]["fx"]["10"]
+        assert fx10["mdl"] == "DE-S2"
+        assert fx10["lo"] == 29
+        assert fx10["hi"] == 35
+        assert fx10["gdr"] == "f"  # female voice
+        assert fx10["fxmix"] == 100
+
+    def test_fx11_deesser_headset(self):
+        """FX11: DE-S2 deesser for ch38 Headset — different tuning from FX10."""
+        snap = snap_template()
+        fx11 = snap["ae_data"]["fx"]["11"]
+        assert fx11["mdl"] == "DE-S2"
+        assert fx11["lo"] == 19
+        assert fx11["hi"] == 37
+        assert fx11["gdr"] == "m"  # male voice
+        assert fx11["fxmix"] == 100
+
+    def test_fx13_geq_placeholder(self):
+        """FX13: near-flat STD GEQ on main — placeholder pending room tuning."""
+        snap = snap_template()
+        fx13 = snap["ae_data"]["fx"]["13"]
+        assert fx13["mdl"] == "GEQ"
+        assert fx13["type"] == "STD"
+        assert fx13["fxmix"] == 100
+        assert fx13["1k6"] == -0.75  # most prominent non-zero band in James reference
+
 
 class TestInfrastructureBuses:
     """Bus names, dynamics model, and routing must come from infrastructure.yaml."""
@@ -722,3 +751,47 @@ class TestInfraChannels:
         slot = self._rendered()["ae_data"]["io"]["in"]["A"]["31"]
         assert slot["name"] == "Headset"
         assert abs(slot["g"] - 35.5) < 0.01
+
+
+class TestLocalInputLabels:
+    """io.in.LCL slots for infrastructure channels must have name, icon, and
+    preamp gain written by _apply_local_input_labels.
+
+    ch39 (Computer) → LCL slot 4
+    ch40 (Talkback) → LCL slot 1
+
+    LCL.1.name renders as 'TALKBACK' (infrastructure-authoritative); existing
+    snapshots carry 'Matthew' — accepted drift.
+    """
+
+    def test_lcl4_computer_name(self):
+        snap = snap_template()
+        assert snap["ae_data"]["io"]["in"]["LCL"]["4"]["name"] == "Computer"
+
+    def test_lcl4_computer_icon(self):
+        snap = snap_template()
+        assert snap["ae_data"]["io"]["in"]["LCL"]["4"]["icon"] == 605
+
+    def test_lcl4_computer_gain(self):
+        snap = snap_template()
+        assert snap["ae_data"]["io"]["in"]["LCL"]["4"]["g"] == 15
+
+    def test_lcl1_talkback_name(self):
+        snap = snap_template()
+        assert snap["ae_data"]["io"]["in"]["LCL"]["1"]["name"] == "TALKBACK"
+
+    def test_lcl1_talkback_icon(self):
+        snap = snap_template()
+        assert snap["ae_data"]["io"]["in"]["LCL"]["1"]["icon"] == 604
+
+    def test_lcl1_talkback_gain(self):
+        snap = snap_template()
+        assert snap["ae_data"]["io"]["in"]["LCL"]["1"]["g"] == 42.5
+
+    def test_other_lcl_slots_unmodified(self):
+        """Slots 2 and 3 must keep Init.snap defaults (drift, not infrastructure)."""
+        snap = snap_template()
+        lcl = snap["ae_data"]["io"]["in"]["LCL"]
+        for slot in ["2", "3"]:
+            assert lcl[slot]["name"] == "", f"LCL[{slot}] name should be empty"
+            assert lcl[slot]["g"] == 0, f"LCL[{slot}] gain should be 0"

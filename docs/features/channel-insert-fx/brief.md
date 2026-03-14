@@ -3,7 +3,7 @@ feature: channel-insert-fx
 date: 2026-03-12
 commit: 7c801d5
 branch: main
-status: solution-space
+status: compacting
 read-when: "starting implementation"
 ---
 
@@ -14,8 +14,9 @@ respectively, but the slots have no model parameters — they load empty. The de
 permanent infrastructure-level processing for those mic types; without them, both vocal
 channels load with sibilance uncontrolled. FX13 is a placeholder for future room-tuning GEQ;
 without it the house main has no insert in the slot that is already assigned. Additionally,
-ch39 (Computer) loads with a blank input-patch label because `io.in.LCL.4.name` is never
-written — cosmetic, but the only labeled-but-blank slot on the console.
+ch39 (Computer) and ch40 (Talkback) load with blank input-patch labels and default gain
+because `io.in.LCL` slots are never written — the renderer has no concept of local input
+labels or preamp gains for infrastructure channels.
 
 ## Not Doing
 
@@ -24,7 +25,7 @@ written — cosmetic, but the only labeled-but-blank slot on the console.
 - DE-S2 parameter tuning — James reference values are the accepted baseline; per-team
   deesser adjustment is out of scope
 - FX3 — inconsistent across team references, remains deferred
-- icon or preamp gain for LCL/4 — name label only; other io.in.LCL fields stay at Init default
+- LCL slots 2-3 — populated in team references but unowned by infrastructure (drift, not intentional config)
 
 ## Constraints
 
@@ -34,12 +35,17 @@ written — cosmetic, but the only labeled-but-blank slot on the console.
   already handles pass-through via `_apply_fx`
 - FX13 added to infrastructure.yaml under `fx: 13:` with James reference values
   (near-flat STD GEQ); the `# placeholder — room tuning deferred` comment is required
-- `io.in.LCL.4.name = "Computer"` is written by a new `_apply_local_input_labels`
-  function in infrastructure.py — reads `channels:` entries with LCL inputs and writes
-  name to the corresponding `io.in.LCL[n]` slot; name is sourced from the existing
-  `channels.39.name` declaration, no new DSL fields needed
-- Integration diff test must pass for FX10, FX11, FX13, and io.in.LCL.4 against the
-  James reference
+- `_apply_local_input_labels` (new function in infrastructure.py) writes name, icon,
+  and preamp_gain (`g`) to `io.in.LCL[n]` for ch39 (LCL.4) and ch40 (LCL.1) —
+  both infrastructure channels with local inputs; same fields as `_apply_stage_box_labels`
+- `preamp_gain` added to `channels.39` (15 dB) and `channels.40` (42.5 dB) in
+  infrastructure.yaml; James reference is canonical; variation in other team snapshots
+  is drift, not intentional
+- `io.in.LCL.1.name` will render as 'TALKBACK' (infrastructure-authoritative); all
+  existing snapshots carry 'Matthew' — accepted drift, rendered snapshots will converge
+- Integration diff covers FX10, FX11, FX13 fully; LCL.4 fully (name+icon+g); LCL.1
+  icon+g only (name diverges from James reference — 'TALKBACK' vs 'Matthew' — accepted);
+  LCL slots 2-3 remain masked
 
 ## Escalation Triggers
 
@@ -50,4 +56,8 @@ written — cosmetic, but the only labeled-but-blank slot on the console.
 
 ## Decisions
 
-(populated during implementation)
+- FX10/11/13 added to infrastructure.yaml as pass-through YAML blocks; `_apply_fx`
+  already handled them, no renderer changes needed
+- `_apply_local_input_labels` added to infrastructure.py; writes name/icon/g to
+  io.in.LCL[n] for any channels: entry with grp=LCL; ch40 name renders 'TALKBACK'
+  (infrastructure-authoritative), divergence from all existing snapshots accepted

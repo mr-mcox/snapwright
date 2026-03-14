@@ -152,6 +152,66 @@ fx:
     mwid: 100
     view: false
 
+  # FX10: DE-S2 deesser — ch37 Handheld pre-insert (female voice tuning)
+  10:
+    mdl: DE-S2
+    fxmix: 100
+    lo: 29
+    hi: 35
+    los: 0
+    his: 0
+    gdr: f
+    mode: st
+
+  # FX11: DE-S2 deesser — ch38 Headset pre-insert (male voice tuning)
+  11:
+    mdl: DE-S2
+    fxmix: 100
+    lo: 19
+    hi: 37
+    los: 0
+    his: 0
+    gdr: m
+    mode: st
+
+  # FX13: STD GEQ — main.1 pre-insert; placeholder — room tuning deferred
+  13:
+    mdl: GEQ
+    fxmix: 100
+    type: STD
+    "20": 0
+    "25": 0
+    "31": -0.25
+    "40": 0
+    "50": 0
+    "63": 0
+    "80": 0
+    "100": 0
+    "125": -0.25
+    "160": -0.25
+    "200": 0
+    "250": 0
+    "315": 0
+    "400": 0
+    "500": 0
+    "630": 0
+    "800": 0
+    1k: 0
+    1k25: 0
+    1k6: -0.75
+    2k: 0
+    2k5: 0
+    3k15: -0.25
+    4k: 0
+    5k: 0
+    6k3: -0.25
+    8k: -0.5
+    10k: 0
+    12k5: 0
+    16k: 0
+    20k: 0
+    TRIM: 0
+
 # ===========================================================================
 # Buses — all 16 channels
 # Bus faders are starting values; they move per service (session-adjusted)
@@ -600,6 +660,7 @@ channels:
   39:
     name: Computer
     icon: 605
+    preamp_gain: 15     # io.in.LCL.4.g — canonical value from James reference
     mute: true
     ptap: "4"         # post-insert tap point
     in:
@@ -635,6 +696,7 @@ channels:
     name: TALKBACK
     col: 9
     icon: 604
+    preamp_gain: 42.5   # io.in.LCL.1.g — consistent across all team references
     mute: true
     clink: false
     led: false

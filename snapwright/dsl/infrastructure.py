@@ -173,6 +173,7 @@ def apply_infrastructure(snap: dict, infra_path: Path | None = None) -> None:
     _apply_mgrp(ae, infra.get("mgrp", {}))
     _apply_cfg(ae, infra.get("cfg", {}))
     _apply_channels(ae, infra.get("channels", {}))
+    _apply_local_input_labels(ae, infra.get("channels", {}))
     _apply_personal_mixer(ae, infra)
     _apply_control_surface(snap, infra, infra_path)
 
@@ -514,6 +515,34 @@ def _apply_channels(ae: dict, channels_config: dict) -> None:
                 ch["main"][str(out_key)].update(out_cfg)
         if "send" in ch_cfg:
             ch["send"] = _build_infra_channel_sends(ch_cfg["send"])
+
+
+# ---------------------------------------------------------------------------
+# Local input labels (io.in.LCL)
+# ---------------------------------------------------------------------------
+
+def _apply_local_input_labels(ae: dict, channels_config: dict) -> None:
+    """Write name, icon, and preamp gain to io.in.LCL[n] for infrastructure
+    channels that use local inputs (grp=LCL).
+
+    Reads name, icon, and preamp_gain from the channels: entry; preamp_gain
+    maps to the Wing field 'g'. Slots not covered keep Init.snap defaults.
+    """
+    lcl = ae["io"]["in"]["LCL"]
+    for ch_cfg in channels_config.values():
+        conn = ch_cfg.get("in", {}).get("conn", {})
+        if conn.get("grp") != "LCL":
+            continue
+        slot = str(conn["in"])
+        if slot not in lcl:
+            continue
+        slot_dict = lcl[slot]
+        if "name" in ch_cfg:
+            slot_dict["name"] = ch_cfg["name"]
+        if "icon" in ch_cfg:
+            slot_dict["icon"] = ch_cfg["icon"]
+        if "preamp_gain" in ch_cfg:
+            slot_dict["g"] = ch_cfg["preamp_gain"]
 
 # ---------------------------------------------------------------------------
 # Physical output routing (io.out)
