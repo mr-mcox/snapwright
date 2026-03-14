@@ -1,0 +1,1141 @@
+{
+  "generated_at": "2026-03-14T02:45:04.320855+00:00",
+  "rendered_from": "data/dsl/teams/james/assembly.yaml",
+  "diff_tree": {
+    "ae_data": {
+      "total": 21408,
+      "changed": 3017,
+      "children": {
+        "aux": {
+          "total": 1768,
+          "changed": 177,
+          "children": {
+            "1": {
+              "total": 221,
+              "changed": 23
+            },
+            "2": {
+              "total": 221,
+              "changed": 22
+            },
+            "3": {
+              "total": 221,
+              "changed": 22
+            },
+            "4": {
+              "total": 221,
+              "changed": 22
+            },
+            "5": {
+              "total": 221,
+              "changed": 22
+            },
+            "6": {
+              "total": 221,
+              "changed": 22
+            },
+            "7": {
+              "total": 221,
+              "changed": 22
+            },
+            "8": {
+              "total": 221,
+              "changed": 22
+            }
+          }
+        },
+        "bus": {
+          "total": 2512,
+          "changed": 337,
+          "children": {
+            "1": {
+              "total": 157,
+              "changed": 33
+            },
+            "2": {
+              "total": 157,
+              "changed": 28
+            },
+            "3": {
+              "total": 157,
+              "changed": 27
+            },
+            "4": {
+              "total": 157,
+              "changed": 27
+            },
+            "5": {
+              "total": 157,
+              "changed": 30
+            },
+            "6": {
+              "total": 157,
+              "changed": 28
+            },
+            "7": {
+              "total": 157,
+              "changed": 25
+            },
+            "8": {
+              "total": 157,
+              "changed": 0
+            },
+            "9": {
+              "total": 157,
+              "changed": 20
+            },
+            "10": {
+              "total": 157,
+              "changed": 19
+            },
+            "11": {
+              "total": 157,
+              "changed": 19
+            },
+            "12": {
+              "total": 157,
+              "changed": 19
+            },
+            "13": {
+              "total": 157,
+              "changed": 17
+            },
+            "14": {
+              "total": 157,
+              "changed": 15
+            },
+            "15": {
+              "total": 157,
+              "changed": 15
+            },
+            "16": {
+              "total": 157,
+              "changed": 15
+            }
+          }
+        },
+        "cards": {
+          "total": 12,
+          "changed": 0,
+          "children": {
+            "wlive": {
+              "total": 10,
+              "changed": 0
+            },
+            "wmadi": {
+              "total": 2,
+              "changed": 0
+            }
+          }
+        },
+        "cfg": {
+          "total": 180,
+          "changed": 29,
+          "children": {
+            "amix": {
+              "total": 2,
+              "changed": 0
+            },
+            "dcamgrp": {
+              "total": 1,
+              "changed": 0
+            },
+            "mainlink": {
+              "total": 1,
+              "changed": 0
+            },
+            "mon": {
+              "total": 76,
+              "changed": 17
+            },
+            "mtr": {
+              "total": 14,
+              "changed": 0
+            },
+            "rta": {
+              "total": 12,
+              "changed": 6
+            },
+            "solo": {
+              "total": 8,
+              "changed": 0
+            },
+            "talk": {
+              "total": 66,
+              "changed": 6
+            }
+          }
+        },
+        "ch": {
+          "total": 10932,
+          "changed": 2059,
+          "children": {
+            "1": {
+              "total": 278,
+              "changed": 87
+            },
+            "2": {
+              "total": 278,
+              "changed": 90
+            },
+            "3": {
+              "total": 269,
+              "changed": 62
+            },
+            "4": {
+              "total": 269,
+              "changed": 60
+            },
+            "5": {
+              "total": 272,
+              "changed": 87
+            },
+            "6": {
+              "total": 281,
+              "changed": 100
+            },
+            "7": {
+              "total": 281,
+              "changed": 100
+            },
+            "8": {
+              "total": 280,
+              "changed": 94
+            },
+            "9": {
+              "total": 269,
+              "changed": 11
+            },
+            "10": {
+              "total": 269,
+              "changed": 11
+            },
+            "11": {
+              "total": 269,
+              "changed": 11
+            },
+            "12": {
+              "total": 269,
+              "changed": 11
+            },
+            "13": {
+              "total": 287,
+              "changed": 114
+            },
+            "14": {
+              "total": 283,
+              "changed": 115
+            },
+            "15": {
+              "total": 279,
+              "changed": 81
+            },
+            "16": {
+              "total": 277,
+              "changed": 91
+            },
+            "17": {
+              "total": 269,
+              "changed": 11
+            },
+            "18": {
+              "total": 269,
+              "changed": 11
+            },
+            "19": {
+              "total": 269,
+              "changed": 11
+            },
+            "20": {
+              "total": 269,
+              "changed": 11
+            },
+            "21": {
+              "total": 269,
+              "changed": 11
+            },
+            "22": {
+              "total": 269,
+              "changed": 11
+            },
+            "23": {
+              "total": 269,
+              "changed": 11
+            },
+            "24": {
+              "total": 269,
+              "changed": 11
+            },
+            "25": {
+              "total": 283,
+              "changed": 108
+            },
+            "26": {
+              "total": 283,
+              "changed": 114
+            },
+            "27": {
+              "total": 283,
+              "changed": 114
+            },
+            "28": {
+              "total": 283,
+              "changed": 115
+            },
+            "29": {
+              "total": 269,
+              "changed": 11
+            },
+            "30": {
+              "total": 269,
+              "changed": 11
+            },
+            "31": {
+              "total": 269,
+              "changed": 11
+            },
+            "32": {
+              "total": 269,
+              "changed": 11
+            },
+            "33": {
+              "total": 269,
+              "changed": 11
+            },
+            "34": {
+              "total": 269,
+              "changed": 11
+            },
+            "35": {
+              "total": 269,
+              "changed": 11
+            },
+            "36": {
+              "total": 269,
+              "changed": 11
+            },
+            "37": {
+              "total": 274,
+              "changed": 105
+            },
+            "38": {
+              "total": 274,
+              "changed": 103
+            },
+            "39": {
+              "total": 269,
+              "changed": 48
+            },
+            "40": {
+              "total": 269,
+              "changed": 51
+            }
+          }
+        },
+        "dca": {
+          "total": 112,
+          "changed": 23,
+          "children": {
+            "1": {
+              "total": 7,
+              "changed": 2
+            },
+            "2": {
+              "total": 7,
+              "changed": 2
+            },
+            "3": {
+              "total": 7,
+              "changed": 2
+            },
+            "4": {
+              "total": 7,
+              "changed": 2
+            },
+            "5": {
+              "total": 7,
+              "changed": 2
+            },
+            "6": {
+              "total": 7,
+              "changed": 2
+            },
+            "7": {
+              "total": 7,
+              "changed": 2
+            },
+            "8": {
+              "total": 7,
+              "changed": 1
+            },
+            "9": {
+              "total": 7,
+              "changed": 1
+            },
+            "10": {
+              "total": 7,
+              "changed": 1
+            },
+            "11": {
+              "total": 7,
+              "changed": 1
+            },
+            "12": {
+              "total": 7,
+              "changed": 1
+            },
+            "13": {
+              "total": 7,
+              "changed": 1
+            },
+            "14": {
+              "total": 7,
+              "changed": 1
+            },
+            "15": {
+              "total": 7,
+              "changed": 1
+            },
+            "16": {
+              "total": 7,
+              "changed": 1
+            }
+          }
+        },
+        "fx": {
+          "total": 142,
+          "changed": 117,
+          "children": {
+            "1": {
+              "total": 6,
+              "changed": 6
+            },
+            "2": {
+              "total": 34,
+              "changed": 33
+            },
+            "3": {
+              "total": 2,
+              "changed": 0
+            },
+            "4": {
+              "total": 2,
+              "changed": 0
+            },
+            "5": {
+              "total": 34,
+              "changed": 33
+            },
+            "6": {
+              "total": 12,
+              "changed": 11
+            },
+            "7": {
+              "total": 34,
+              "changed": 34
+            },
+            "8": {
+              "total": 2,
+              "changed": 0
+            },
+            "9": {
+              "total": 2,
+              "changed": 0
+            },
+            "10": {
+              "total": 2,
+              "changed": 0
+            },
+            "11": {
+              "total": 2,
+              "changed": 0
+            },
+            "12": {
+              "total": 2,
+              "changed": 0
+            },
+            "13": {
+              "total": 2,
+              "changed": 0
+            },
+            "14": {
+              "total": 2,
+              "changed": 0
+            },
+            "15": {
+              "total": 2,
+              "changed": 0
+            },
+            "16": {
+              "total": 2,
+              "changed": 0
+            }
+          }
+        },
+        "io": {
+          "total": 4722,
+          "changed": 106,
+          "children": {
+            "altsw": {
+              "total": 1,
+              "changed": 0
+            },
+            "autoaltovr": {
+              "total": 1,
+              "changed": 0
+            },
+            "in": {
+              "total": 3972,
+              "changed": 65
+            },
+            "out": {
+              "total": 748,
+              "changed": 41
+            }
+          }
+        },
+        "main": {
+          "total": 392,
+          "changed": 84,
+          "children": {
+            "1": {
+              "total": 99,
+              "changed": 42
+            },
+            "2": {
+              "total": 99,
+              "changed": 25
+            },
+            "3": {
+              "total": 97,
+              "changed": 9
+            },
+            "4": {
+              "total": 97,
+              "changed": 8
+            }
+          }
+        },
+        "mgrp": {
+          "total": 16,
+          "changed": 9,
+          "children": {
+            "1": {
+              "total": 2,
+              "changed": 1
+            },
+            "2": {
+              "total": 2,
+              "changed": 1
+            },
+            "3": {
+              "total": 2,
+              "changed": 1
+            },
+            "4": {
+              "total": 2,
+              "changed": 1
+            },
+            "5": {
+              "total": 2,
+              "changed": 1
+            },
+            "6": {
+              "total": 2,
+              "changed": 1
+            },
+            "7": {
+              "total": 2,
+              "changed": 1
+            },
+            "8": {
+              "total": 2,
+              "changed": 2
+            }
+          }
+        },
+        "mtx": {
+          "total": 616,
+          "changed": 76,
+          "children": {
+            "1": {
+              "total": 77,
+              "changed": 10
+            },
+            "2": {
+              "total": 77,
+              "changed": 10
+            },
+            "3": {
+              "total": 77,
+              "changed": 10
+            },
+            "4": {
+              "total": 77,
+              "changed": 10
+            },
+            "5": {
+              "total": 77,
+              "changed": 10
+            },
+            "6": {
+              "total": 77,
+              "changed": 10
+            },
+            "7": {
+              "total": 77,
+              "changed": 8
+            },
+            "8": {
+              "total": 77,
+              "changed": 8
+            }
+          }
+        },
+        "play": {
+          "total": 1,
+          "changed": 0,
+          "children": {
+            "repeat": {
+              "total": 1,
+              "changed": 0
+            }
+          }
+        },
+        "rec": {
+          "total": 3,
+          "changed": 0,
+          "children": {
+            "channels": {
+              "total": 1,
+              "changed": 0
+            },
+            "path": {
+              "total": 1,
+              "changed": 0
+            },
+            "resolution": {
+              "total": 1,
+              "changed": 0
+            }
+          }
+        }
+      }
+    },
+    "ce_data": {
+      "total": 7177,
+      "changed": 93,
+      "children": {
+        "cfg": {
+          "total": 54,
+          "changed": 0,
+          "children": {
+            "autosel_C": {
+              "total": 1,
+              "changed": 0
+            },
+            "autosel_CMPCT": {
+              "total": 1,
+              "changed": 0
+            },
+            "autosel_EXT": {
+              "total": 1,
+              "changed": 0
+            },
+            "autosel_L": {
+              "total": 1,
+              "changed": 0
+            },
+            "autosel_R": {
+              "total": 1,
+              "changed": 0
+            },
+            "autosel_RCK": {
+              "total": 1,
+              "changed": 0
+            },
+            "autosel_VRT": {
+              "total": 1,
+              "changed": 0
+            },
+            "autosel_WEDIT": {
+              "total": 1,
+              "changed": 0
+            },
+            "autoview": {
+              "total": 1,
+              "changed": 0
+            },
+            "busspill": {
+              "total": 1,
+              "changed": 0
+            },
+            "cscmode": {
+              "total": 1,
+              "changed": 0
+            },
+            "csctouch": {
+              "total": 1,
+              "changed": 0
+            },
+            "dcacc": {
+              "total": 1,
+              "changed": 0
+            },
+            "dcaspill": {
+              "total": 1,
+              "changed": 0
+            },
+            "fdrbanking": {
+              "total": 1,
+              "changed": 0
+            },
+            "fdrscrnlink": {
+              "total": 1,
+              "changed": 0
+            },
+            "layerlinkl": {
+              "total": 1,
+              "changed": 0
+            },
+            "layerlinkr": {
+              "total": 1,
+              "changed": 0
+            },
+            "lights": {
+              "total": 11,
+              "changed": 0
+            },
+            "mainspill": {
+              "total": 1,
+              "changed": 0
+            },
+            "mfdr": {
+              "total": 1,
+              "changed": 0
+            },
+            "mfdrkeep": {
+              "total": 1,
+              "changed": 0
+            },
+            "mtxspill": {
+              "total": 1,
+              "changed": 0
+            },
+            "muteovr": {
+              "total": 1,
+              "changed": 0
+            },
+            "rackmode": {
+              "total": 1,
+              "changed": 0
+            },
+            "rta": {
+              "total": 7,
+              "changed": 0
+            },
+            "seldblclick": {
+              "total": 1,
+              "changed": 0
+            },
+            "selfsolo": {
+              "total": 1,
+              "changed": 0
+            },
+            "sfdr2solo": {
+              "total": 1,
+              "changed": 0
+            },
+            "showfdr": {
+              "total": 1,
+              "changed": 0
+            },
+            "sof2solo": {
+              "total": 1,
+              "changed": 0
+            },
+            "sofbutton": {
+              "total": 1,
+              "changed": 0
+            },
+            "soffdr": {
+              "total": 1,
+              "changed": 0
+            },
+            "sofframe": {
+              "total": 1,
+              "changed": 0
+            },
+            "sofmode": {
+              "total": 1,
+              "changed": 0
+            },
+            "soloexcl": {
+              "total": 1,
+              "changed": 0
+            },
+            "solofsel": {
+              "total": 1,
+              "changed": 0
+            },
+            "usrmode": {
+              "total": 1,
+              "changed": 0
+            }
+          }
+        },
+        "daw": {
+          "total": 7,
+          "changed": 0,
+          "children": {
+            "ccup": {
+              "total": 1,
+              "changed": 0
+            },
+            "config": {
+              "total": 1,
+              "changed": 0
+            },
+            "conn": {
+              "total": 1,
+              "changed": 0
+            },
+            "disjog": {
+              "total": 1,
+              "changed": 0
+            },
+            "emul": {
+              "total": 1,
+              "changed": 0
+            },
+            "on": {
+              "total": 1,
+              "changed": 0
+            },
+            "preset": {
+              "total": 1,
+              "changed": 0
+            }
+          }
+        },
+        "gpio": {
+          "total": 8,
+          "changed": 0,
+          "children": {
+            "1": {
+              "total": 2,
+              "changed": 0
+            },
+            "2": {
+              "total": 2,
+              "changed": 0
+            },
+            "3": {
+              "total": 2,
+              "changed": 0
+            },
+            "4": {
+              "total": 2,
+              "changed": 0
+            }
+          }
+        },
+        "layer": {
+          "total": 6234,
+          "changed": 11,
+          "children": {
+            "C": {
+              "total": 302,
+              "changed": 1
+            },
+            "CMPCT": {
+              "total": 668,
+              "changed": 0
+            },
+            "EXT": {
+              "total": 402,
+              "changed": 0
+            },
+            "L": {
+              "total": 520,
+              "changed": 1
+            },
+            "R": {
+              "total": 424,
+              "changed": 9
+            },
+            "RCK": {
+              "total": 324,
+              "changed": 0
+            },
+            "VRT": {
+              "total": 402,
+              "changed": 0
+            },
+            "WEDIT": {
+              "total": 3192,
+              "changed": 0
+            }
+          }
+        },
+        "lib": {
+          "total": 0,
+          "changed": 0,
+          "children": {}
+        },
+        "midi": {
+          "total": 8,
+          "changed": 0,
+          "children": {
+            "enchctl": {
+              "total": 1,
+              "changed": 0
+            },
+            "encustctl": {
+              "total": 1,
+              "changed": 0
+            },
+            "enfxctl": {
+              "total": 1,
+              "changed": 0
+            },
+            "enmidicc": {
+              "total": 1,
+              "changed": 0
+            },
+            "enscenes": {
+              "total": 1,
+              "changed": 0
+            },
+            "enscenetx": {
+              "total": 1,
+              "changed": 0
+            },
+            "enshowctl": {
+              "total": 1,
+              "changed": 0
+            },
+            "ensysex": {
+              "total": 1,
+              "changed": 0
+            }
+          }
+        },
+        "osc": {
+          "total": 1,
+          "changed": 0,
+          "children": {
+            "ronly": {
+              "total": 1,
+              "changed": 0
+            }
+          }
+        },
+        "safes": {
+          "total": 43,
+          "changed": 0,
+          "children": {
+            "area": {
+              "total": 9,
+              "changed": 0
+            },
+            "aux": {
+              "total": 1,
+              "changed": 0
+            },
+            "bus": {
+              "total": 1,
+              "changed": 0
+            },
+            "ch": {
+              "total": 1,
+              "changed": 0
+            },
+            "custom": {
+              "total": 1,
+              "changed": 0
+            },
+            "dca": {
+              "total": 1,
+              "changed": 0
+            },
+            "fx": {
+              "total": 1,
+              "changed": 0
+            },
+            "main": {
+              "total": 1,
+              "changed": 0
+            },
+            "mtx": {
+              "total": 1,
+              "changed": 0
+            },
+            "mute": {
+              "total": 1,
+              "changed": 0
+            },
+            "output": {
+              "total": 11,
+              "changed": 0
+            },
+            "setup": {
+              "total": 1,
+              "changed": 0
+            },
+            "source": {
+              "total": 13,
+              "changed": 0
+            }
+          }
+        },
+        "user": {
+          "total": 822,
+          "changed": 82,
+          "children": {
+            "D1": {
+              "total": 16,
+              "changed": 0
+            },
+            "D2": {
+              "total": 16,
+              "changed": 0
+            },
+            "D3": {
+              "total": 16,
+              "changed": 0
+            },
+            "D4": {
+              "total": 16,
+              "changed": 0
+            },
+            "MM": {
+              "total": 16,
+              "changed": 0
+            },
+            "U1": {
+              "total": 16,
+              "changed": 0
+            },
+            "U2": {
+              "total": 16,
+              "changed": 0
+            },
+            "U3": {
+              "total": 16,
+              "changed": 0
+            },
+            "U4": {
+              "total": 16,
+              "changed": 0
+            },
+            "cmode": {
+              "total": 1,
+              "changed": 0
+            },
+            "cuser": {
+              "total": 3,
+              "changed": 0
+            },
+            "daw1": {
+              "total": 24,
+              "changed": 0
+            },
+            "daw2": {
+              "total": 22,
+              "changed": 0
+            },
+            "daw3": {
+              "total": 24,
+              "changed": 0
+            },
+            "daw4": {
+              "total": 22,
+              "changed": 0
+            },
+            "gpio": {
+              "total": 8,
+              "changed": 0
+            },
+            "mode": {
+              "total": 1,
+              "changed": 0
+            },
+            "sel": {
+              "total": 1,
+              "changed": 0
+            },
+            "user": {
+              "total": 24,
+              "changed": 0
+            },
+            "1": {
+              "total": 52,
+              "changed": 36
+            },
+            "2": {
+              "total": 38,
+              "changed": 18
+            },
+            "3": {
+              "total": 40,
+              "changed": 24
+            },
+            "4": {
+              "total": 34,
+              "changed": 4
+            },
+            "5": {
+              "total": 32,
+              "changed": 0
+            },
+            "6": {
+              "total": 32,
+              "changed": 0
+            },
+            "7": {
+              "total": 32,
+              "changed": 0
+            },
+            "8": {
+              "total": 32,
+              "changed": 0
+            },
+            "9": {
+              "total": 32,
+              "changed": 0
+            },
+            "10": {
+              "total": 32,
+              "changed": 0
+            },
+            "11": {
+              "total": 32,
+              "changed": 0
+            },
+            "12": {
+              "total": 32,
+              "changed": 0
+            },
+            "13": {
+              "total": 32,
+              "changed": 0
+            },
+            "14": {
+              "total": 32,
+              "changed": 0
+            },
+            "15": {
+              "total": 32,
+              "changed": 0
+            },
+            "16": {
+              "total": 32,
+              "changed": 0
+            }
+          }
+        }
+      }
+    }
+  }
+}
