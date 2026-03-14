@@ -1,9 +1,9 @@
 ---
 feature: control-surface
 date: 2026-03-12
-commit: 6e48f10
+commit: 865aaef
 branch: main
-status: solution-space
+status: compacting
 read-when: "starting implementation"
 ---
 
