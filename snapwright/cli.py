@@ -5,6 +5,13 @@ from pathlib import Path
 
 import click
 
+from snapwright.coverage import (
+    DEFAULT_ASSEMBLY,
+    REPORT_PATH,
+    build_coverage_report,
+    format_summary_table,
+    write_report,
+)
 from snapwright.dsl.renderer import render_assembly
 from snapwright.evolution.diff import diff_snap_files
 from snapwright.evolution.patterns import find_patterns
@@ -116,5 +123,46 @@ def analyze_evolution(
         click.echo(f"✗ Error: {exc}", err=True)
         import traceback
 
+        traceback.print_exc()
+        sys.exit(1)
+
+
+@main.command()
+@click.argument(
+    "assembly",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    required=False,
+)
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(path_type=Path),
+    default=None,
+    help=f"JSON report output path. Defaults to {REPORT_PATH}",
+)
+def coverage(assembly: Path | None, output: Path | None):
+    """Generate a renderer coverage report.
+
+    Renders Init.snap + infrastructure.yaml + ASSEMBLY (default: james/assembly.yaml),
+    diffs the result against Init.snap at section granularity, and writes a JSON
+    report. Prints a summary table to stdout.
+
+    The JSON report is the machine-readable artifact for LLM agent consumption.
+    Run the /snapwright-coverage-summary prompt to generate docs/coverage.md from it.
+    """
+    asm_path = assembly or DEFAULT_ASSEMBLY
+    out_path = output or REPORT_PATH
+
+    try:
+        click.echo(f"Rendering {asm_path} against Init.snap...")
+        report = build_coverage_report(asm_path)
+        write_report(report, out_path)
+        click.echo(f"✓ Report written to {out_path}")
+        click.echo()
+        click.echo(format_summary_table(report))
+    except Exception as exc:
+        click.echo(f"✗ Error: {exc}", err=True)
+        import traceback
         traceback.print_exc()
         sys.exit(1)
