@@ -1,0 +1,30 @@
+{
+  "1": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "FDR",  "name": "Lead Vox",  "ch": 25},
+    "bu":  {"mode": "INS1", "name": "Lead Fx",   "ch": 25},
+    "bd":  {"mode": "INS1", "name": "Delay Fx",  "ch": 57}
+  },
+  "2": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "FDR",  "name": "Back Vox",  "ch": 53},
+    "bu":  {"mode": "INS1", "name": "Reverb",     "ch": 53},
+    "bd":  {"mode": "INS2", "name": "Chorus",     "ch": 53}
+  },
+  "3": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "OFF", "name": ""},
+    "bu":  {"mode": "OFF", "name": ""},
+    "bd":  {"mode": "OFF", "name": ""}
+  },
+  "4": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "OFF", "name": ""},
+    "bu":  {"mode": "OFF", "name": ""},
+    "bd":  {"mode": "OFF", "name": ""}
+  }
+}

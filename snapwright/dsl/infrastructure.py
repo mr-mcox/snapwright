@@ -14,6 +14,7 @@ Called by snap_template() in defaults.py so the invariant holds for all callers.
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 from typing import Any
 
@@ -173,6 +174,7 @@ def apply_infrastructure(snap: dict, infra_path: Path | None = None) -> None:
     _apply_cfg(ae, infra.get("cfg", {}))
     _apply_channels(ae, infra.get("channels", {}))
     _apply_personal_mixer(ae, infra)
+    _apply_control_surface(snap, infra, infra_path)
 
 
 # ---------------------------------------------------------------------------
@@ -735,3 +737,195 @@ def _apply_personal_mixer(ae: dict, infra_yaml: dict) -> None:
             io_out_a[a_key] = {"grp": "BUS", "in": (bus_num * 2) - 1}
         else:  # off
             io_out_a[a_key] = {"grp": "OFF", "in": 1}
+
+
+# ---------------------------------------------------------------------------
+# Control surface (ce_data.layer + ce_data.user)
+# ---------------------------------------------------------------------------
+
+# Selected-page name -> sel integer, keyed by surface section.
+# R section: MAIN/DCA/CH1-40/AUX/BUSES/USER1/USER2 (7 banks)
+# L section: CH1-12/CH13-24/CH25-36/CH37-AUX/BUSES/USER1/USER2 (7 banks)
+# C section: DCA/MAIN/AUX/BUSES/USER1/USER2 (6 banks)
+_SECTION_SEL_MAP: dict[str, dict[str, int]] = {
+    "L": {"user1": 6, "user2": 7},
+    "C": {"main": 2, "user1": 5, "user2": 6},
+    "R": {"main": 2, "user1": 6, "user2": 7},
+}
+
+# Selected-page name -> bank key (string) within the section, for writing strip content.
+_SECTION_BANK_KEY: dict[str, dict[str, str]] = {
+    "L": {"user1": "6", "user2": "7"},
+    "C": {"main": "2", "user1": "5", "user2": "6"},
+    "R": {"main": "2", "user1": "6", "user2": "7"},
+}
+
+_OFF_STRIP = {"type": "OFF", "i": 0, "dst": 1}
+_USER_BANKS_DIR = _INFRA_YAML_PATH.parent.parent / "user_banks"
+
+
+def _build_ch_name_map(
+    channels_config: dict,
+    infra_channels_config: dict,
+    dsl_root: Path,
+) -> dict[str, int]:
+    """Build channel-name -> channel-number map for control surface name resolution.
+
+    Reads name fields from channels: entries first, then loads musician files
+    referenced by infra_channels: to pick up their names. This means channels
+    like Handheld and Headset do not need duplicate name stubs in channels:.
+    """
+    result: dict[str, int] = {}
+    for ch_num_str, ch_cfg in channels_config.items():
+        name = ch_cfg.get("name") if isinstance(ch_cfg, dict) else None
+        if name:
+            result[str(name)] = int(ch_num_str)
+    for ch_num_str, ch_cfg in infra_channels_config.items():
+        if not isinstance(ch_cfg, dict):
+            continue
+        inherits = ch_cfg.get("inherits")
+        if not inherits:
+            continue
+        musician_path = dsl_root / inherits
+        if musician_path.exists():
+            musician_raw = yaml.safe_load(musician_path.read_text()) or {}
+            name = musician_raw.get("name")
+            if name:
+                result[str(name)] = int(ch_num_str)
+    return result
+
+
+def _build_main_name_map(ae_mains: dict) -> dict[str, int]:
+    """Build main-output-name -> main-number map from already-rendered ae_data.main."""
+    result: dict[str, int] = {}
+    for num_str, main_dict in ae_mains.items():
+        name = main_dict.get("name")
+        if name:
+            result[str(name)] = int(num_str)
+    return result
+
+
+def _resolve_strip(entry: dict, ch_name_map: dict[str, int], main_name_map: dict[str, int]) -> dict:
+    """Resolve a DSL strip entry dict to a Wing strip dict {type, i, dst}."""
+    if "channel" in entry:
+        name = entry["channel"]
+        num = ch_name_map.get(name)
+        if num is None:
+            raise ValueError(
+                f"Control surface strip references unknown channel {name!r}. "
+                f"Add an entry to infrastructure.yaml channels: with name: {name!r}."
+            )
+        return {"type": "CH", "i": num, "dst": 1}
+    elif "main" in entry:
+        name = entry["main"]
+        num = main_name_map.get(name)
+        if num is None:
+            raise ValueError(
+                f"Control surface strip references unknown main {name!r}. "
+                f"Known: {list(main_name_map)}."
+            )
+        return {"type": "BUS", "i": 16 + num, "dst": 1}
+    elif "bus" in entry:
+        raise NotImplementedError("bus: strip type not yet implemented for user_layers")
+    elif "dca" in entry:
+        raise NotImplementedError("dca: strip type not yet implemented for user_layers")
+    else:
+        return dict(_OFF_STRIP)
+
+
+def _apply_user_layers(snap: dict, infra: dict, infra_path: Path) -> None:
+    """Apply user_layers config: set surface sel and populate USER bank strips."""
+    user_layers = infra.get("user_layers", {})
+    if not user_layers:
+        return
+
+    ch_name_map = _build_ch_name_map(
+        infra.get("channels", {}),
+        infra.get("infra_channels", {}),
+        infra_path.parent,
+    )
+    main_name_map = _build_main_name_map(snap["ae_data"].get("main", {}))
+
+    section_map = {"right": "R", "left": "L", "center": "C"}
+    for section_key, section_cfg in user_layers.items():
+        if not isinstance(section_cfg, dict):
+            continue
+        wing_section = section_map.get(section_key)
+        if wing_section is None:
+            continue
+
+        section_data = snap["ce_data"]["layer"][wing_section]
+        selected_name = section_cfg.get("selected")
+
+        # Set selected bank (sel integer)
+        if selected_name:
+            sel_int = _SECTION_SEL_MAP.get(wing_section, {}).get(selected_name)
+            if sel_int is not None:
+                section_data["sel"] = sel_int
+
+        # Populate strip content for named page banks that have strip lists
+        for page_name, strips in section_cfg.items():
+            if page_name == "selected" or not isinstance(strips, list):
+                continue
+            bank_key = _SECTION_BANK_KEY.get(wing_section, {}).get(page_name)
+            if bank_key is None:
+                continue
+            bank = section_data.get(bank_key)
+            if bank is None:
+                continue
+            for idx, strip_entry in enumerate(strips, start=1):
+                resolved = _resolve_strip(strip_entry, ch_name_map, main_name_map)
+                bank[str(idx)] = resolved
+            # Remaining strips already OFF in Init.snap; no explicit fill needed.
+
+
+def _apply_user_banks(snap: dict, infra: dict, infra_path: Path) -> None:
+    """Load bank sidecar JSON files and write to ce_data.user layers 1-N."""
+    user_banks = infra.get("user_banks", {})
+    active = user_banks.get("active", []) if isinstance(user_banks, dict) else []
+    if not active:
+        return
+
+    banks_dir = infra_path.parent / "user_banks"
+    ce_user = snap["ce_data"]["user"]
+
+    for idx, bank_name in enumerate(active, start=1):
+        bank_file = banks_dir / f"{bank_name}.json"
+        if not bank_file.exists():
+            raise FileNotFoundError(
+                f"User bank sidecar file not found: {bank_file}. "
+                f"Extract from reference snap and save as data/dsl/user_banks/{bank_name}.json"
+            )
+        with bank_file.open() as f:
+            bank_data = json.load(f)
+        ce_user[str(idx)] = bank_data
+
+
+def _apply_control_surface(snap: dict, infra: dict, infra_path: Path) -> None:
+    """Apply ce_data control surface config from infrastructure.yaml."""
+    _apply_user_layers(snap, infra, infra_path)
+    _apply_user_banks(snap, infra, infra_path)
+
+
+def get_infra_channel_names(infra_path: Path | None = None) -> dict[str, int]:
+    """Return musician-name -> channel-number map for infrastructure-defined channels.
+
+    Used by the assembly renderer to include infra channels in musician_to_ch,
+    ensuring monitor sends work for channels like handheld/headset even if a
+    future team assembly omits them from channels:.
+    """
+    if infra_path is None:
+        infra_path = _INFRA_YAML_PATH
+    with infra_path.open() as f:
+        raw = yaml.safe_load(f) or {}
+    result: dict[str, int] = {}
+    for ch_num_str, ch_cfg in (raw.get("infra_channels") or {}).items():
+        if not isinstance(ch_cfg, dict):
+            continue
+        # Derive the canonical musician name from the inherits path:
+        # musicians/handheld.yaml -> "handheld"
+        inherits = ch_cfg.get("inherits")
+        if inherits:
+            name = Path(inherits).stem  # e.g. "handheld"
+            result[name] = int(ch_num_str)
+    return result

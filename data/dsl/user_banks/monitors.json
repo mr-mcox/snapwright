@@ -1,0 +1,30 @@
+{
+  "1": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "SSND", "name": "Lead Monitor", "send": "BUS13"},
+    "bu":  {"mode": "SOF",  "name": "Lead Send",    "ch": 61},
+    "bd":  {"mode": "OFF",  "name": ""}
+  },
+  "2": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "SSND", "name": "Sing Monitor", "send": "BUS14"},
+    "bu":  {"mode": "SOF",  "name": "Sing Send",    "ch": 62},
+    "bd":  {"mode": "OFF",  "name": ""}
+  },
+  "3": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "SSND", "name": "Bass Monitor", "send": "BUS15"},
+    "bu":  {"mode": "SOF",  "name": "Bass Send",    "ch": 63},
+    "bd":  {"mode": "OFF",  "name": ""}
+  },
+  "4": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "SSND", "name": "Drum Monitor", "send": "BUS16"},
+    "bu":  {"mode": "SOF",  "name": "Drum Send",    "ch": 64},
+    "bd":  {"mode": "OFF",  "name": ""}
+  }
+}

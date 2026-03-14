@@ -578,9 +578,22 @@ cfg:
     eqgain: -5          # RTA gain offset for EQ display
 
 # ===========================================================================
-# Infrastructure channels — ch39 (Computer) and ch40 (Talkback)
-# ch37 (Handheld) and ch38 (Headset) are team DSL channels (in assembly.yaml)
+# Infrastructure channels
+#
+# infra_channels: ch37 (Handheld) and ch38 (Headset) — always present,
+# configured from musician files. Teams add thin overrides (fader, mute)
+# and monitor sends; they never need to re-specify EQ/dynamics.
+#
+# channels: ch39 (Computer) and ch40 (Talkback) — full inline config.
 # ===========================================================================
+
+infra_channels:
+  37:
+    inherits: musicians/handheld.yaml
+    input: 32          # stage-box A.32
+  38:
+    inherits: musicians/headset.yaml
+    input: 31          # stage-box A.31
 
 channels:
   # ch39: Computer audio input — local input 4, muted by default, goes to stream
@@ -676,3 +689,40 @@ personal_mixer:
     12: { label: Other Inst, type: group }
     15: { label: Wireless,   type: group }
     16: { label: Drums Mon,  type: monitor,    bus: monitor_4 }
+
+# ===========================================================================
+# Control surface — user layer pages (ce_data.layer)
+# Sets the active bank (sel) for each hardware surface section.
+# right.user1 strip list populates the R section USER1 bank.
+# left/center: selected page only — strip content deferred.
+# ===========================================================================
+
+user_layers:
+  right:
+    selected: user1      # opens "send on fader" flip for monitors
+    user1:
+      - { channel: Handheld }
+      - { channel: Headset }
+      - { main: STREAM }
+      - { main: HOUSE }
+
+  # left and center: selected page only — strip content deferred
+  left:
+    selected: user1
+  center:
+    selected: main
+
+
+# ===========================================================================
+# Control surface — right-side user button banks (ce_data.user)
+# Assign named banks to CC user layers 1–4 in order.
+# Bank sidecar files live in data/dsl/user_banks/{name}.json.
+# Reorder, remove, or null out to change what operators get.
+# ===========================================================================
+
+user_banks:
+  active:
+    - monitors     # layer 1: monitor send levels per mix
+    - vocals       # layer 2: lead/back vox faders + FX inserts
+    - fx_sends     # layer 3: delay / reverb send controls
+    - dca_fx       # layer 4: DCA FX mute
