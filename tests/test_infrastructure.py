@@ -575,3 +575,150 @@ class TestStreamOutputRouting:
         io_out = self._io_out()
         for slot in ["3", "4"]:
             assert io_out["USB"][slot] == {"grp": "OFF", "in": 1}
+
+
+# ---------------------------------------------------------------------------
+# Control surface -- ce_data.layer and ce_data.user
+# ---------------------------------------------------------------------------
+
+
+class TestControlSurfaceLayer:
+    """ce_data.layer: surface section sel values and USER1 bank strip content."""
+
+    def _layer(self, snap: dict) -> dict:
+        return snap["ce_data"]["layer"]
+
+    def test_right_sel_user1(self):
+        """R section must have sel=6 (USER1 page selected)."""
+        assert self._layer(snap_template())["R"]["sel"] == 6
+
+    def test_left_sel_user1(self):
+        """L section must have sel=6 (USER1 page selected)."""
+        assert self._layer(snap_template())["L"]["sel"] == 6
+
+    def test_center_sel_main(self):
+        """C section must have sel=2 (MAIN page selected)."""
+        assert self._layer(snap_template())["C"]["sel"] == 2
+
+    def test_right_user1_strip1_handheld(self):
+        """R USER1 strip 1 must be CH 37 (Handheld)."""
+        bank = self._layer(snap_template())["R"]["6"]
+        assert bank["1"] == {"type": "CH", "i": 37, "dst": 1}
+
+    def test_right_user1_strip2_headset(self):
+        """R USER1 strip 2 must be CH 38 (Headset)."""
+        bank = self._layer(snap_template())["R"]["6"]
+        assert bank["2"] == {"type": "CH", "i": 38, "dst": 1}
+
+    def test_right_user1_strip3_stream(self):
+        """R USER1 strip 3 must be BUS 18 (STREAM main output)."""
+        bank = self._layer(snap_template())["R"]["6"]
+        assert bank["3"] == {"type": "BUS", "i": 18, "dst": 1}
+
+    def test_right_user1_strip4_house(self):
+        """R USER1 strip 4 must be BUS 17 (HOUSE main output)."""
+        bank = self._layer(snap_template())["R"]["6"]
+        assert bank["4"] == {"type": "BUS", "i": 17, "dst": 1}
+
+    def test_right_user1_strips_5_to_16_off(self):
+        """R USER1 strips 5-16 must be OFF."""
+        bank = self._layer(snap_template())["R"]["6"]
+        for i in range(5, 17):
+            assert bank[str(i)]["type"] == "OFF", f"Strip {i} should be OFF"
+
+
+class TestControlSurfaceUserBanks:
+    """ce_data.user: user layer bank content loaded from sidecar JSON files."""
+
+    def _user(self, snap: dict) -> dict:
+        return snap["ce_data"]["user"]
+
+    def test_layer1_monitors_enc_mode(self):
+        """Layer 1 strip 1 enc must be SSND (monitor send level)."""
+        layer1 = self._user(snap_template())["1"]
+        assert layer1["1"]["enc"]["mode"] == "SSND"
+        assert layer1["1"]["enc"]["send"] == "BUS13"
+
+    def test_layer1_monitors_all_four_strips(self):
+        """Layer 1 (monitors) must have 4 strips with SSND enc to BUS13-16."""
+        layer1 = self._user(snap_template())["1"]
+        for i, bus in enumerate(["BUS13", "BUS14", "BUS15", "BUS16"], start=1):
+            assert layer1[str(i)]["enc"]["send"] == bus, (
+                f"Layer 1 strip {i} enc.send={layer1[str(i)]['enc']['send']}, expected {bus}"
+            )
+
+    def test_layer2_vocals_lead_vox(self):
+        """Layer 2 strip 1 enc must be FDR on ch 25 (Lead Vox)."""
+        layer2 = self._user(snap_template())["2"]
+        assert layer2["1"]["enc"]["mode"] == "FDR"
+        assert layer2["1"]["enc"]["ch"] == 25
+
+    def test_layer3_fx_sends_delay(self):
+        """Layer 3 strip 1 enc must be SSND to BUS9 (Delay/Slap)."""
+        layer3 = self._user(snap_template())["3"]
+        assert layer3["1"]["enc"]["mode"] == "SSND"
+        assert layer3["1"]["enc"]["send"] == "BUS9"
+
+    def test_layer4_dca_fx(self):
+        """Layer 4 strip 1 enc must be DCA mode for FX DCA."""
+        layer4 = self._user(snap_template())["4"]
+        assert layer4["1"]["enc"]["mode"] == "DCA"
+        assert layer4["1"]["enc"]["dca"] == "FX"
+
+
+class TestInfraChannels:
+    """Infrastructure channels (ch37 Handheld, ch38 Headset).
+
+    These channels are defined in infrastructure.yaml infra_channels: and rendered
+    from musician files during every render_assembly() call, regardless of whether
+    the team assembly mentions them.  snap_template() provides name stubs only;
+    full EQ/dynamics/routing are applied by _render_infra_channels in renderer.py.
+    """
+
+    # Full config is applied during render_assembly() via _render_infra_channels.
+    # snap_template() does not apply infra channel EQ/dynamics; only names/routing
+    # are set. Use James assembly as the test vehicle.
+
+    def test_ch37_name(self):
+        assert self._rendered()["ae_data"]["ch"]["37"]["name"] == "Handheld"
+
+    def test_ch38_name(self):
+        assert self._rendered()["ae_data"]["ch"]["38"]["name"] == "Headset"
+
+    # Use James assembly as the test vehicle; Priscilla also exercises this path.
+    @staticmethod
+    def _rendered():
+        from snapwright.dsl.renderer import render_assembly
+        return render_assembly("data/dsl/teams/james/assembly.yaml")
+
+    def test_ch37_eq_applied(self):
+        """Handheld EQ must be on after assembly render (musician file eq.on=True)."""
+        assert self._rendered()["ae_data"]["ch"]["37"]["eq"]["on"] is True
+
+    def test_ch38_eq_applied(self):
+        """Headset EQ must be on after assembly render."""
+        assert self._rendered()["ae_data"]["ch"]["38"]["eq"]["on"] is True
+
+    def test_ch37_input_routing(self):
+        """Handheld must be routed to stage-box A slot 32 after assembly render."""
+        conn = self._rendered()["ae_data"]["ch"]["37"]["in"]["conn"]
+        assert conn["grp"] == "A"
+        assert conn["in"] == 32
+
+    def test_ch38_input_routing(self):
+        """Headset must be routed to stage-box A slot 31 after assembly render."""
+        conn = self._rendered()["ae_data"]["ch"]["38"]["in"]["conn"]
+        assert conn["grp"] == "A"
+        assert conn["in"] == 31
+
+    def test_ch37_stage_box_label(self):
+        """Stage box slot A.32 must have Handheld label and preamp gain."""
+        slot = self._rendered()["ae_data"]["io"]["in"]["A"]["32"]
+        assert slot["name"] == "Handheld"
+        assert abs(slot["g"] - 30.5) < 0.01
+
+    def test_ch38_stage_box_label(self):
+        """Stage box slot A.31 must have Headset label and preamp gain."""
+        slot = self._rendered()["ae_data"]["io"]["in"]["A"]["31"]
+        assert slot["name"] == "Headset"
+        assert abs(slot["g"] - 35.5) < 0.01

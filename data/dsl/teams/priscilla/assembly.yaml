@@ -79,13 +79,9 @@ musicians:
       vocals: -10.69
 
   handheld:
-    inherits:
-      - musicians/handheld.yaml
     fader: -3.70
 
   headset:
-    inherits:
-      - musicians/headset.yaml
     fader: 4.35
 
 # ---------------------------------------------------------------------------
@@ -115,8 +111,7 @@ inputs:
   piano:    1
   guitar:   9
   area-mic: 16
-  handheld: 32
-  headset:  31
+  # handheld/headset: input routing defined in infrastructure.yaml infra_channels
 
 buses:
   1:  drums

@@ -1,0 +1,30 @@
+{
+  "1": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "SSND", "name": "Delay",    "send": "BUS9"},
+    "bu":  {"mode": "SOF",  "name": "Send",      "ch": 57},
+    "bd":  {"mode": "OFF",  "name": ""}
+  },
+  "2": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "SSND", "name": "Rev Med",   "send": "BUS10"},
+    "bu":  {"mode": "SOF",  "name": "Send",       "ch": 58},
+    "bd":  {"mode": "OFF",  "name": ""}
+  },
+  "3": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "SSND", "name": "Rev Long",  "send": "BUS11"},
+    "bu":  {"mode": "SOF",  "name": "Send",       "ch": 59},
+    "bd":  {"mode": "OFF",  "name": ""}
+  },
+  "4": {
+    "led": false,
+    "col": 1,
+    "enc": {"mode": "FDR",  "name": "Back Fx",   "ch": 60},
+    "bu":  {"mode": "SOF",  "name": "Send",       "ch": 60},
+    "bd":  {"mode": "OFF",  "name": ""}
+  }
+}

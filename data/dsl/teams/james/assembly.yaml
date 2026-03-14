@@ -135,13 +135,9 @@ musicians:
       back_vox: 0.21
 
   handheld:
-    inherits:
-      - musicians/handheld.yaml
     mute: false   # spare mic, unmuted on this team
 
   headset:
-    inherits:
-      - musicians/headset.yaml
     mute: false   # spare mic, unmuted on this team
 
   piano:
@@ -192,8 +188,7 @@ inputs:
   priscilla-vox: 11
   anna-vox:      12
   yolaine-vox:   13
-  handheld:      32
-  headset:       31
+  # handheld/headset: input routing defined in infrastructure.yaml infra_channels
   piano:         1
 
 buses:
